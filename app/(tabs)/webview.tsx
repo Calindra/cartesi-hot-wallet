@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Alert } from 'react-native';
+import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Alert, Modal, Text, Button } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -91,6 +91,8 @@ const injectedJS = `
     })();
 `;
 
+const currentTransaction: any = {}
+
 export default function WebViewScreen() {
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,9 +100,11 @@ export default function WebViewScreen() {
   const [canGoForward, setCanGoForward] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -178,6 +182,25 @@ export default function WebViewScreen() {
     </View>
   );
 
+  const handleTransaction = async () => {
+    setModalVisible(false)
+    const txHash = await client.sendTransaction(currentTransaction.params)
+    console.log('Transaction Hash:', txHash);
+    const result = txHash;
+    console.log('result', result)
+    const response = {
+      reqId: currentTransaction.request.reqId,
+      result,
+    }
+    const eventScript = `
+      window.ethereum.responseReceiver(${JSON.stringify(response)});
+      true; // To ensure execution is finished
+    `;
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(eventScript);
+    }
+  }
+
   const handleMessage = async (event: WebViewMessageEvent) => {
     const message = event.nativeEvent.data; // Get message from WebView
     // Alert.alert("Message from WebView", message);
@@ -191,16 +214,16 @@ export default function WebViewScreen() {
             result = [client.account?.address]
           } else if (request.args.method === 'eth_sendTransaction') {
             const params = request.args.params[0]
-            const transactionParams = {
+            currentTransaction.params = {
               ...params,
               account: client.account!,
               gasLimit: params.gas,
               gas: undefined,
             }
-            console.log('transactionParams', transactionParams)
-            const txHash = await client.sendTransaction(transactionParams)
-            console.log('Transaction Hash:', txHash);
-            result = txHash;
+            currentTransaction.request = request
+            console.log('transactionParams', currentTransaction)
+            setModalVisible(true)
+            return
           } else {
             result = await client.request(request.args);
           }
@@ -218,16 +241,6 @@ export default function WebViewScreen() {
           console.error(e)
         }
       }
-      // const eventScript = `
-      // window.ethereum.eventReceiver({
-      //   detail: {
-      //     ok: 1,
-      //   },
-      // });
-      // true; // To ensure execution is finished
-      // `;
-      // webViewRef.current.injectJavaScript(eventScript);
-
     }
   };
 
@@ -276,6 +289,21 @@ export default function WebViewScreen() {
         )}
 
         {/* <NavigationBar /> */}
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Are you sure you want to send this transaction?</Text>
+              <Button title="Confirm" onPress={handleTransaction} />
+              <Button title="Cancel" onPress={() => setModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
       </ThemedView>
     </GestureHandlerRootView>
   );
@@ -314,5 +342,17 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     zIndex: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: 300,
   },
 });
