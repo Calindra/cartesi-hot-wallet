@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Alert, Modal, Text, Button } from 'react-native';
+import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Modal, Text, Button, Pressable } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -7,7 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ScrollView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { createPublicClient, createWalletClient, http, parseEther, PrivateKeyAccount, toBytes } from "viem";
+import { createWalletClient, http, PrivateKeyAccount, toBytes } from "viem";
 import { holesky } from "viem/chains";
 import { HDKey } from '@scure/bip32';
 import { keccak256, hexToBytes, bytesToHex } from 'viem';
@@ -79,13 +79,15 @@ const injectedJS = `
         },
         responseReceiver: (response) => {
           console.log("response", response)
-          if (!response.error) {
-            if (!requests[response.reqId]) {
-              console.log("ReqID not found", response.reqId, requests)
-              return
-            }
-            requests[response.reqId].resolve(response.result)
+          if (!requests[response.reqId]) {
+            console.log("ReqID not found", response.reqId, requests)
+            return
           }
+          if (response.error) {
+            requests[response.reqId].reject(new Error(response.error.message))
+            return
+          }
+          requests[response.reqId].resolve(response.result)
         },
       }
     })();
@@ -201,6 +203,23 @@ export default function WebViewScreen() {
     }
   }
 
+  const cancelTransaction = async () => {
+    setModalVisible(false)
+    const response = {
+      reqId: currentTransaction.request.reqId,
+      error: {
+        message: `The user canceled the transaction`
+      },
+    }
+    const eventScript = `
+      window.ethereum.responseReceiver(${JSON.stringify(response)});
+      true; // To ensure execution is finished
+    `;
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(eventScript);
+    }
+  }
+
   const handleMessage = async (event: WebViewMessageEvent) => {
     const message = event.nativeEvent.data; // Get message from WebView
     // Alert.alert("Message from WebView", message);
@@ -293,16 +312,38 @@ export default function WebViewScreen() {
         <Modal
           visible={modalVisible}
           transparent={true}
-          animationType="fade"
+          animationType="slide" // Changed to slide for better UX
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text>Are you sure you want to send this transaction?</Text>
-              <Button title="Confirm" onPress={handleTransaction} />
-              <Button title="Cancel" onPress={() => setModalVisible(false)} />
+          <TouchableOpacity
+            style={styles.modalContainer}
+            activeOpacity={1} // Prevents opacity flash
+            onPress={() => setModalVisible(false)} // Close on background press
+          >
+            <View
+              style={styles.modalContent}
+              onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
+            >
+              <Text style={styles.modalTitle}>Confirm Transaction</Text>
+              <Text style={styles.modalMessage}>
+                Are you sure you want to send this transaction?
+              </Text>
+              <View style={styles.buttonContainer}>
+                <Pressable
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={cancelTransaction}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.button, styles.confirmButton]}
+                  onPress={handleTransaction}
+                >
+                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </Modal>
       </ThemedView>
     </GestureHandlerRootView>
@@ -347,12 +388,61 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better contrast
   },
   modalContent: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    width: 300,
+    padding: 24,
+    borderRadius: 16,
+    width: '85%', // More responsive width
+    maxWidth: 400, // Maximum width for larger screens
+    minWidth: 280, // Minimum width for smaller screens
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5, // Android shadow
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: 24,
+    textAlign: 'center',
+    color: '#666',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  confirmButton: {
+    backgroundColor: '#007AFF',
+  },
+  cancelButton: {
+    backgroundColor: '#F2F2F2',
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
