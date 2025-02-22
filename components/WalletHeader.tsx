@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import LoginContext from '@/hooks/loginContext';
 
 interface WalletHeaderProps {
     setShowLogin: (value: boolean) => void
 }
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
-    const [address, setAddress] = useState<string | null>(null);
     const colorScheme = useColorScheme();
+    const { address } = useContext(LoginContext);
     const colors = Colors[colorScheme ?? 'light'];
 
     const handleConnect = () => {
-        // setAddress('0x1234...abcd'); // Example address
         setShowLogin(true)
     };
 

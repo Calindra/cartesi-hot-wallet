@@ -1,29 +1,32 @@
-import { 
-    Account, 
-    Chain, 
-    createWalletClient, 
-    http, 
-    PrivateKeyAccount, 
-    toBytes, 
-    Transport, 
-    WalletClient 
+import {
+    Account,
+    Chain,
+    createWalletClient,
+    http,
+    PrivateKeyAccount,
+    toBytes,
+    Transport,
+    WalletClient
 } from "viem";
 import { holesky } from "viem/chains";
 import { HDKey } from '@scure/bip32';
 import { keccak256, hexToBytes, bytesToHex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import * as SecureStore from "expo-secure-store";
 
 class WalletService {
-    private cachedWallet: Record<string, WalletClient<Transport, Chain, Account>> = {};
 
-    getWalletClient(seedHex: string): WalletClient<Transport, Chain, Account> {
-        const cached = this.cachedWallet[seedHex];
-        if (cached) {
-            return cached;
+    getCurrentWallet() {
+        const seed = SecureStore.getItem("user_password")
+        if (!seed) {
+            return;
         }
+        return this.createWalletFromSeed(seed);
+    }
 
+    createWalletFromSeed(seed: string) {
         // Convert seed to bytes
-        const seedBytes = toBytes(seedHex);
+        const seedBytes = toBytes(seed);
 
         // Apply Keccak-256 hash to the seed
         const hashedSeed = keccak256(seedBytes);
@@ -51,12 +54,17 @@ class WalletService {
             chain: holesky,
             transport: http(),
         });
-
-        this.cachedWallet[seedHex] = client;
         return client;
+    }
+
+    setCurrentWallet(seed: string): WalletClient<Transport, Chain, Account> {
+        SecureStore.setItemAsync("user_password", seed)
+            .catch(e => console.error(e));
+
+        return this.createWalletFromSeed(seed)
     }
 }
 
 const walletService = new WalletService();
-
+console.log('wallet service')
 export { walletService };

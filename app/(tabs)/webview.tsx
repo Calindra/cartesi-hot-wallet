@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useContext } from 'react';
 import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Modal, Text, Button, Pressable } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,6 +8,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ScrollView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
+import LoginContext from '@/hooks/loginContext';
 
 
 const injectedJS = `
@@ -29,18 +30,29 @@ const injectedJS = `
           return promiseWrapper.promise;
         },
         on: (eventName, listenerFn) => {
-          const reqId = crypto.randomUUID();
-          let mapFun = listeners[eventName] || new Map();
-          mapFun.set(listenerFn, reqId);
-          listeners[eventName] = mapFun;
-          window.ReactNativeWebView.postMessage(JSON.stringify({ method: "on", reqId, eventName }));
+          try {
+            console.log('on', eventName)
+            const reqId = crypto.randomUUID();
+            let mapFun = listeners[eventName] || new Map();
+            mapFun.set(listenerFn, reqId);
+            listeners[eventName] = mapFun;
+            window.ReactNativeWebView.postMessage(JSON.stringify({ method: "on", reqId, eventName }));
+          } catch(e) {
+            console.log(e)
+          }
         },
         removeListener: (...args) => {
           const reqId = crypto.randomUUID();
           window.ReactNativeWebView.postMessage(JSON.stringify({ method: "removeListener", reqId, args }));
         },
         eventReceiver: (event) => {
-          alert("Event received in WebView:" + JSON.stringify(event));
+          const map = listeners[event.eventName];
+          if (!map) {
+            return
+          }
+          for (const fn of map.keys()) {
+            fn(event.result)
+          }
         },
         responseReceiver: (response) => {
           console.log("response", response)
@@ -71,7 +83,7 @@ export default function WebViewScreen() {
   const progressAnim = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-
+  const { setAddress } = useContext(LoginContext);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -151,7 +163,11 @@ export default function WebViewScreen() {
 
   const handleTransaction = async () => {
     setModalVisible(false)
-    const client = walletService.getWalletClient('another_super_secret_here')
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      // TODO: open the login screen
+      return
+    }
     const txHash = await client.sendTransaction(currentTransaction.params)
     console.log('Transaction Hash:', txHash);
     const result = txHash;
@@ -187,11 +203,18 @@ export default function WebViewScreen() {
   }
 
   const handleMessage = async (event: WebViewMessageEvent) => {
-    const client = walletService.getWalletClient('another_super_secret_here')
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      // TODO: open the login screen
+      console.log('No client!')
+      setAddress('')
+      return;
+    }
     const message = event.nativeEvent.data; // Get message from WebView
     // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
       const request = JSON.parse(message);
+      console.log('Raw request', request)
       if (request.method === 'request') {
         try {
           console.log(request)
@@ -226,6 +249,18 @@ export default function WebViewScreen() {
         } catch (e) {
           console.error(e)
         }
+      } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
+        console.log('Register listener', request)
+        const result = [client.account?.address]
+        const response = {
+          eventName: request.eventName,
+          result,
+        }
+        const eventScript = `
+          window.ethereum.eventReceiver(${JSON.stringify(response)});
+          true; // To ensure execution is finished
+        `;
+        webViewRef.current.injectJavaScript(eventScript);
       }
     }
   };
