@@ -7,43 +7,8 @@ import { Colors } from '@/constants/Colors';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ScrollView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { createWalletClient, http, PrivateKeyAccount, toBytes } from "viem";
-import { holesky } from "viem/chains";
-import { HDKey } from '@scure/bip32';
-import { keccak256, hexToBytes, bytesToHex } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { walletService } from '@/src/services/WalletService';
 
-// const seedHex = 'your_hex_seed_here'; // Replace with a 64-byte hex seed
-const seedHex = 'another_super_secret_here'; // Replace with a 64-byte hex seed
-
-// Convert seed to bytes
-const seedBytes = toBytes(seedHex);
-
-// Apply Keccak-256 hash to the seed
-const hashedSeed = keccak256(seedBytes);
-console.log('Keccak-256 Hashed Seed:', hashedSeed);
-
-// Convert hashed seed to bytes
-const hashedSeedBytes = hexToBytes(hashedSeed);
-
-// Use hashed seed to generate an HD wallet
-const hdWallet = HDKey.fromMasterSeed(hashedSeedBytes);
-const child = hdWallet.derive("m/44'/60'/0'/0/0"); // Standard Ethereum derivation path
-
-// Convert the private key to hex
-const privateKey = child.privateKey ? bytesToHex(child.privateKey) : null;
-
-let account: PrivateKeyAccount | undefined
-if (privateKey) {
-  console.log('Derived Private Key:', privateKey);
-  account = privateKeyToAccount(privateKey);
-}
-
-const client = createWalletClient({
-  account,
-  chain: holesky,
-  transport: http(),
-});
 
 const injectedJS = `
     (() => {
@@ -186,6 +151,7 @@ export default function WebViewScreen() {
 
   const handleTransaction = async () => {
     setModalVisible(false)
+    const client = walletService.getWalletClient('another_super_secret_here')
     const txHash = await client.sendTransaction(currentTransaction.params)
     console.log('Transaction Hash:', txHash);
     const result = txHash;
@@ -221,6 +187,7 @@ export default function WebViewScreen() {
   }
 
   const handleMessage = async (event: WebViewMessageEvent) => {
+    const client = walletService.getWalletClient('another_super_secret_here')
     const message = event.nativeEvent.data; // Get message from WebView
     // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {

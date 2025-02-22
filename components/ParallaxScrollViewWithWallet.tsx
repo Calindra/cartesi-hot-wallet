@@ -5,6 +5,7 @@ import { WalletHeader } from './WalletHeader';
 
 interface ParallaxScrollViewWithWalletProps extends ParallaxScrollViewProps {
     showWallet?: boolean;
+    children?: React.ReactNode;
 }
 
 const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> = ({ 
@@ -18,7 +19,10 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
         <View style={styles.container}>
             <ParallaxScrollView 
                 {...props}
-                style={[props.style, showWallet && { marginTop: headerHeight }]}
+                style={{
+                    ...props.style,
+                    ...(showWallet ? { marginTop: headerHeight } : {}),
+                }}
             >
                 {children}
             </ParallaxScrollView>

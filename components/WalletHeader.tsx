@@ -2,34 +2,39 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import PasswordScreen from '@/components/PasswordScreen';
 
 export const WalletHeader: React.FC = () => {
     const [address, setAddress] = useState<string | null>(null);
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
+    const [showPwd, setShowPwd] = useState(false)
 
     const handleConnect = () => {
-        // TODO: Implement wallet connection logic
-        setAddress('0x1234...abcd'); // Example address
+        // setAddress('0x1234...abcd'); // Example address
+        setShowPwd(true)
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
-                {address ? (
-                    <Text style={[styles.addressText, { color: colors.text }]}>
-                        {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
-                    </Text>
-                ) : (
-                    <TouchableOpacity 
-                        style={[styles.connectButton, { backgroundColor: colors.tint }]}
-                        onPress={handleConnect}
-                    >
-                        <Text style={styles.connectButtonText}>Connect Wallet</Text>
-                    </TouchableOpacity>
-                )}
+        <>
+            {showPwd && <PasswordScreen />}
+            <View style={[styles.container, { backgroundColor: colors.background }]}>
+                <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
+                    {address ? (
+                        <Text style={[styles.addressText, { color: colors.text }]}>
+                            {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
+                        </Text>
+                    ) : (
+                        <TouchableOpacity
+                            style={[styles.connectButton, { backgroundColor: colors.tint }]}
+                            onPress={handleConnect}
+                        >
+                            <Text style={styles.connectButtonText}>Connect Wallet</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
-        </View>
+        </>
     );
 };
 
