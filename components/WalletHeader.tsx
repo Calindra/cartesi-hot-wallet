@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import PasswordScreen from '@/components/PasswordScreen';
 
-export const WalletHeader: React.FC = () => {
+interface WalletHeaderProps {
+    setShowLogin: (value: boolean) => void
+}
+
+export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
     const [address, setAddress] = useState<string | null>(null);
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
-    const [showPwd, setShowPwd] = useState(false)
 
     const handleConnect = () => {
         // setAddress('0x1234...abcd'); // Example address
-        setShowPwd(true)
+        setShowLogin(true)
     };
 
     return (
         <>
-            {showPwd && <PasswordScreen />}
             <View style={[styles.container, { backgroundColor: colors.background }]}>
                 <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
                     {address ? (
