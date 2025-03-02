@@ -1,11 +1,9 @@
-import React, { useRef, useState, useCallback, useContext } from 'react';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, RefreshControl, Animated, Modal, Text, Button, Pressable } from 'react-native';
+import React, { useRef, useState, useContext } from 'react';
+import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { ScrollView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
@@ -71,7 +69,16 @@ const injectedJS = `
 `;
 
 const injectJS = `
-  document.body.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden';
+
+  // River Raid
+  rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/40b0cb5ee306')
+
+  // Slalom
+  // rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f')
+
+  // Pakboy
+  // rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb')
 `
 
 const currentTransaction: any = {}
@@ -88,12 +95,6 @@ export default function WebViewScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { setAddress } = useContext(LoginContext);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    webViewRef.current?.reload();
-    setRefreshing(false);
-  }, []);
 
   const onLoadProgress = ({ nativeEvent }: { nativeEvent: { progress: number } }) => {
     setProgress(nativeEvent.progress);
@@ -125,45 +126,6 @@ export default function WebViewScreen() {
       />
     ) : null;
   };
-
-  const NavigationBar = () => (
-    <View style={[styles.navigationBar, { backgroundColor: colors.background }]}>
-      <TouchableOpacity
-        onPress={() => webViewRef.current?.goBack()}
-        disabled={!canGoBack}
-        style={styles.navButton}
-      >
-        <IconSymbol
-          name="chevron.left"
-          size={24}
-          color={canGoBack ? colors.tint : colors.tabIconDefault}
-        />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => webViewRef.current?.goForward()}
-        disabled={!canGoForward}
-        style={styles.navButton}
-      >
-        <IconSymbol
-          name="chevron.right"
-          size={24}
-          color={canGoForward ? colors.tint : colors.tabIconDefault}
-        />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => webViewRef.current?.reload()}
-        style={styles.navButton}
-      >
-        <IconSymbol
-          name="arrow.clockwise"
-          size={24}
-          color={colors.tint}
-        />
-      </TouchableOpacity>
-    </View>
-  );
 
   const handleTransaction = async () => {
     setModalVisible(false)
@@ -273,42 +235,32 @@ export default function WebViewScreen() {
     <GestureHandlerRootView>
       <ThemedView style={styles.container}>
         <ProgressBar />
-        {/* <ScrollView
-          contentContainerStyle={styles.scrollView}
-          // refreshControl={
-          //   <RefreshControl
-          //     refreshing={refreshing}
-          //     onRefresh={onRefresh}
-          //     tintColor={colors.tint}
-          //   />
-          // }
-        > */}
-          <WebView
-            ref={webViewRef}
-            source={{ 
-              // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-              uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-            }}
-            style={styles.webview}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => setIsLoading(false)}
-            onLoadProgress={onLoadProgress}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            onNavigationStateChange={onNavigationStateChange}
-            bounces={false}
-            overScrollMode="never"
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.warn('WebView error: ', nativeEvent);
-            }}
-            injectedJavaScriptBeforeContentLoaded={injectedJS}
-            injectedJavaScript={injectJS}
-            onMessage={handleMessage}
-            webviewDebuggingEnabled={true}
-          />
-        {/* </ScrollView> */}
-
+        <WebView
+          ref={webViewRef}
+          source={{
+            // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
+            // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
+            // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
+            uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
+          }}
+          style={styles.webview}
+          onLoadStart={() => setIsLoading(true)}
+          onLoadEnd={() => setIsLoading(false)}
+          onLoadProgress={onLoadProgress}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          onNavigationStateChange={onNavigationStateChange}
+          bounces={false}
+          overScrollMode="never"
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.warn('WebView error: ', nativeEvent);
+          }}
+          injectedJavaScriptBeforeContentLoaded={injectedJS}
+          injectedJavaScript={injectJS}
+          onMessage={handleMessage}
+          webviewDebuggingEnabled={true}
+        />
         {isLoading && (
           <ActivityIndicator
             style={styles.loader}
@@ -316,9 +268,6 @@ export default function WebViewScreen() {
             color={colors.tint}
           />
         )}
-
-        {/* <NavigationBar /> */}
-
         <Modal
           visible={modalVisible}
           transparent={true}
@@ -363,6 +312,7 @@ export default function WebViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 47 : StatusBar.currentHeight,
   },
   scrollView: {
     flex: 1,
