@@ -1,5 +1,5 @@
-import { StyleSheet, Image, Platform } from 'react-native';
-
+import { StyleSheet, Button } from 'react-native';
+import { Link } from 'expo-router';
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet';
@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function Home() {
+export default function Home({ navigation }: any) {
   return (
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -23,6 +23,26 @@ export default function Home() {
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
+      
+      <Link href={{
+        pathname: "/(tabs)/webview",
+        params: {
+          gameURL: "https://mainnet-v5.rives.io/data/cartridges/40b0cb5ee306"
+        }
+      }}><ThemedText>Rives Raid</ThemedText></Link>
+      <Link href={{
+        pathname: "/(tabs)/webview",
+        params: {
+          gameURL: "https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f"
+        }
+      }}><ThemedText>Slalom</ThemedText></Link>
+      
+      <Link href={{
+        pathname: "/(tabs)/webview",
+        params: {
+          gameURL: "https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb"
+        }
+      }}><ThemedText>Pakboy</ThemedText></Link>
       <Collapsible title="File-based routing">
         <ThemedText>
           This app has two screens:{' '}

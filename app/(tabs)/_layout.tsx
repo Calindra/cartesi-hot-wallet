@@ -44,6 +44,7 @@ export default function TabLayout() {
         options={{
           title: 'Rives',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gamecontroller.fill" color={color} />,
+
         }}
       />
     </Tabs>

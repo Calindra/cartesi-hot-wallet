@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState, useContext, useCallback, useEffect } from 'react';
 import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,6 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 
 
 const injectedJS = `
@@ -68,22 +69,13 @@ const injectedJS = `
     })();
 `;
 
-const injectJS = `
-  document.body.style.overflow = 'hidden';
 
-  // River Raid
-  rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/40b0cb5ee306')
-
-  // Slalom
-  // rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f')
-
-  // Pakboy
-  // rivemuUploadCartridge('https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb')
-`
 
 const currentTransaction: any = {}
 
 export default function WebViewScreen() {
+  const { gameURL } = useLocalSearchParams();
+
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
@@ -95,6 +87,22 @@ export default function WebViewScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { setAddress } = useContext(LoginContext);
+
+  const injectJS = `
+  document.body.style.overflow = 'hidden';
+  rivemuUploadCartridge("${gameURL}" || "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs");
+  `
+
+  useEffect(() => {
+    if (webViewRef.current) {
+      const injectJS = `
+        document.body.style.overflow = 'hidden';
+        rivemuUploadCartridge("${gameURL}");
+        true;
+      `
+      webViewRef.current.injectJavaScript(injectJS);
+    }
+  }, [gameURL, webViewRef])
 
   const onLoadProgress = ({ nativeEvent }: { nativeEvent: { progress: number } }) => {
     setProgress(nativeEvent.progress);
@@ -241,7 +249,10 @@ export default function WebViewScreen() {
             // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
             // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
             // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
-            uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
+            // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
+            // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
+            // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
+            uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
           }}
           style={styles.webview}
           onLoadStart={() => setIsLoading(true)}
