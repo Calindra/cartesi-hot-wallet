@@ -70,6 +70,10 @@ const injectedJS = `
     })();
 `;
 
+const injectJS = `
+  document.body.style.overflow = 'hidden'
+`
+
 const currentTransaction: any = {}
 
 export default function WebViewScreen() {
@@ -269,7 +273,7 @@ export default function WebViewScreen() {
     <GestureHandlerRootView>
       <ThemedView style={styles.container}>
         <ProgressBar />
-        <ScrollView
+        {/* <ScrollView
           contentContainerStyle={styles.scrollView}
           // refreshControl={
           //   <RefreshControl
@@ -278,20 +282,13 @@ export default function WebViewScreen() {
           //     tintColor={colors.tint}
           //   />
           // }
-        >
+        > */}
           <WebView
             ref={webViewRef}
             source={{ 
               // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-              // uri: 'https://raw.githubusercontent.com/fabiooshiro/dave-raid/main/src/assets/gamepad.html',
               uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-              // headers: {
-              //   Accept: "text/html",
-              // }
             }}
-            // onShouldStartLoadWithRequest={request => {
-            //   return true
-            // }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}
@@ -306,11 +303,11 @@ export default function WebViewScreen() {
               console.warn('WebView error: ', nativeEvent);
             }}
             injectedJavaScriptBeforeContentLoaded={injectedJS}
+            injectedJavaScript={injectJS}
             onMessage={handleMessage}
             webviewDebuggingEnabled={true}
-            
           />
-        </ScrollView>
+        {/* </ScrollView> */}
 
         {isLoading && (
           <ActivityIndicator
