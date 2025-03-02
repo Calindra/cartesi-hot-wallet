@@ -16,10 +16,19 @@ _(Consider specifying the key differences, advantages, or challenges in each cas
 
 - A small fee for swaps within the Cartesi Hot Wallet (a standard wallet revenue model).  
 - A Paio fee for transactions interacting with our sequencer.  
+- Web3 store checkout (swap a token for a product, so it's a swap revenue model).
 
-## Easy Deployment  
+## Seamless Deployment  
 
-- A ready-to-use template following best practices for app deployment.  
+- A ready-to-use template following best practices for Cartesi app deployment.  
+
+```sh
+hot-wallet create my-app
+cd my-app
+code .
+# dev work
+hot-wallet deploy
+```
 
 **Optional:**  
 > Backend running on AWS Lambda (or another serverless platform) for bare-metal computation.  
@@ -30,6 +39,12 @@ _(Consider specifying the key differences, advantages, or challenges in each cas
 - Our wallet checks the on-chain hash to ensure integrity.  
 - Apps follow a stake-based deployment model for security.  
 - Only safe and verified apps are accessible.  
+
+### Frontend Stake
+
+A rank will be applied to show the heaviest staker first.
+The stake is placed on a frontend version (hash).
+IPFS as a hash verifier.
 
 ## Frictionless Onboarding  
 

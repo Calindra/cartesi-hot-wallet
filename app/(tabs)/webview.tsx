@@ -271,17 +271,27 @@ export default function WebViewScreen() {
         <ProgressBar />
         <ScrollView
           contentContainerStyle={styles.scrollView}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.tint}
-            />
-          }
+          // refreshControl={
+          //   <RefreshControl
+          //     refreshing={refreshing}
+          //     onRefresh={onRefresh}
+          //     tintColor={colors.tint}
+          //   />
+          // }
         >
           <WebView
             ref={webViewRef}
-            source={{ uri: 'https://dapp-coprocessor-frontend.vercel.app/' }}
+            source={{ 
+              // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
+              // uri: 'https://raw.githubusercontent.com/fabiooshiro/dave-raid/main/src/assets/gamepad.html',
+              uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
+              // headers: {
+              //   Accept: "text/html",
+              // }
+            }}
+            // onShouldStartLoadWithRequest={request => {
+            //   return true
+            // }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}
@@ -298,6 +308,7 @@ export default function WebViewScreen() {
             injectedJavaScriptBeforeContentLoaded={injectedJS}
             onMessage={handleMessage}
             webviewDebuggingEnabled={true}
+            
           />
         </ScrollView>
 
