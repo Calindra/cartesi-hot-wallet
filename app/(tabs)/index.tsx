@@ -1,7 +1,5 @@
 import { StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -22,8 +20,6 @@ export default function Home() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      
       <Link href={{
         pathname: "/(tabs)/webview",
         params: {
@@ -49,21 +45,6 @@ export default function Home() {
           gameURL: "https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb"
         }
       }}><ThemedText>Pakboy</ThemedText></Link>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      {/* Rest of the content remains the same */}
     </ParallaxScrollViewWithWallet>
   );
 }

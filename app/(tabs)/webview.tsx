@@ -1,5 +1,5 @@
 import React, { useRef, useState, useContext, useEffect } from 'react';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar } from 'react-native';
+import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar, Dimensions } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -9,12 +9,14 @@ import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
 import { useLocalSearchParams } from 'expo-router';
 
-
+const { height, width } = Dimensions.get("window");
+const paddingBottom = Platform.OS === 'ios' ? 120 : (Platform.OS === 'android' ? 40 : 0);
 const injectedJS = `
+    window.innerHeight = ${height - paddingBottom};
     (() => {
       const listeners = {};
       const requests = {};
-      window.ethereum = {
+      window.cartesiWallet = window.ethereum = {
         request: (args) => {
           const reqId = crypto.randomUUID();
           const req = { method: "request", reqId, args };
@@ -65,11 +67,10 @@ const injectedJS = `
           }
           requests[response.reqId].resolve(response.result)
         },
-      }
+      };
     })();
+    true;
 `;
-
-
 
 const currentTransaction: any = {}
 
@@ -245,7 +246,8 @@ export default function WebViewScreen() {
             // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
             // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
             // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
-            uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
+            // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
+            uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
           }}
           style={styles.webview}
           onLoadStart={() => setIsLoading(true)}
@@ -315,10 +317,8 @@ export default function WebViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 47 : StatusBar.currentHeight,
-  },
-  scrollView: {
-    flex: 1,
+    // paddingTop: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight,
+    paddingTop: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight,
   },
   webview: {
     flex: 1,
@@ -328,17 +328,6 @@ const styles = StyleSheet.create({
     top: '50%',
     left: '50%',
     transform: [{ translateX: -25 }, { translateY: -25 }],
-  },
-  navigationBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 50,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  navButton: {
-    padding: 10,
   },
   progressBar: {
     height: 3,

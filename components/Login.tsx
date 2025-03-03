@@ -92,15 +92,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     handleButtonPress();
     setError("");
 
-    if (!email.trim()) {
-      setError("Please enter your email");
-      return;
-    }
+    // if (!email.trim()) {
+    //   setError("Please enter your email");
+    //   return;
+    // }
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email");
-      return;
-    }
+    // if (!validateEmail(email)) {
+    //   setError("Please enter a valid email");
+    //   return;
+    // }
 
     if (!password) {
       setError("Please enter your password");
@@ -146,7 +146,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to your account</Text>
 
-            <View style={styles.inputContainer}>
+            {/* <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>
                 <Feather name="mail" size={20} color="#666" />
               </View>
@@ -159,7 +159,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 autoCapitalize="none"
                 placeholderTextColor="#999"
               />
-            </View>
+            </View> */}
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>

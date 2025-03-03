@@ -10,4 +10,4 @@ Just 3 RIVEs game.
 
 ## Network
 
-Just testnet.
+Just one testnet: Holesky.
