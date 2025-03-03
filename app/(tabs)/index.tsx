@@ -1,4 +1,4 @@
-import { StyleSheet, Button } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function Home({ navigation }: any) {
+export default function Home() {
   return (
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -24,6 +24,12 @@ export default function Home({ navigation }: any) {
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
       
+      <Link href={{
+        pathname: "/(tabs)/webview",
+        params: {
+          gameURL: "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs"
+        }
+      }}><ThemedText>Gamepad test</ThemedText></Link>
       <Link href={{
         pathname: "/(tabs)/webview",
         params: {

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useContext, useEffect } from 'react';
 import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,7 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 
 const injectedJS = `
@@ -78,9 +78,6 @@ export default function WebViewScreen() {
 
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [canGoForward, setCanGoForward] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -91,16 +88,17 @@ export default function WebViewScreen() {
   const injectJS = `
   document.body.style.overflow = 'hidden';
   rivemuUploadCartridge("${gameURL}" || "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs");
+  true; // To ensure execution is finished
   `
 
   useEffect(() => {
     if (webViewRef.current) {
-      const injectJS = `
+      const changeGameJS = `
         document.body.style.overflow = 'hidden';
         rivemuUploadCartridge("${gameURL}");
         true;
       `
-      webViewRef.current.injectJavaScript(injectJS);
+      webViewRef.current.injectJavaScript(changeGameJS);
     }
   }, [gameURL, webViewRef])
 
@@ -111,11 +109,6 @@ export default function WebViewScreen() {
       duration: 200,
       useNativeDriver: false,
     }).start();
-  };
-
-  const onNavigationStateChange = (navState: any) => {
-    setCanGoBack(navState.canGoBack);
-    setCanGoForward(navState.canGoForward);
   };
 
   const ProgressBar = () => {
@@ -260,7 +253,6 @@ export default function WebViewScreen() {
           onLoadProgress={onLoadProgress}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          onNavigationStateChange={onNavigationStateChange}
           bounces={false}
           overScrollMode="never"
           onError={(syntheticEvent) => {
