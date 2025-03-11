@@ -16,15 +16,21 @@ import * as SecureStore from "expo-secure-store";
 
 class WalletService {
 
+    private currentWallet: WalletClient<Transport, Chain, Account> | undefined
+
     getCurrentWallet() {
+        if (this.currentWallet) {
+            return this.currentWallet
+        }
         const seed = SecureStore.getItem("user_password")
         if (!seed) {
             return;
         }
-        return this.createWalletFromSeed(seed);
+        this.currentWallet = this.createWalletFromSeed(seed);
+        return this.currentWallet
     }
 
-    createWalletFromSeed(seed: string) {
+    private createWalletFromSeed(seed: string) {
         // Convert seed to bytes
         const seedBytes = toBytes(seed);
 

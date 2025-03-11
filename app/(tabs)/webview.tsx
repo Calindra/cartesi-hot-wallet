@@ -10,6 +10,29 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
 
+const injectedToPlay = `
+function resetParentPositions(element) {
+    let parent = element.parentElement;
+    while (parent) {
+        if (parent.tagName !== 'BODY') {
+          parent.style.position = 'absolute';
+          parent = parent.parentElement;
+        }
+    }
+}
+const canvas = document.getElementById('canvas')
+resetParentPositions(canvas)
+canvas.className = '';
+canvas.style.top = '0';
+canvas.style.left = '0';
+canvas.style.zIndex = '10';
+canvas.style.border = 0;
+canvas.style.position = 'absolute';
+canvas.style.width = '100vw';
+canvas.style.height = '100vh';
+canvas.style.transformOrigin = 'top left';
+// document.body.prepend(canvas);
+`;
 
 const injectedJS = `
     (() => {
@@ -136,17 +159,23 @@ export default function WebViewScreen() {
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => webViewRef.current?.goForward()}
-        disabled={!canGoForward}
-        style={styles.navButton}
+      <Pressable
+        style={[styles.button, styles.cancelButton]}
+        onPress={() => {
+          webViewRef.current?.injectJavaScript(injectedToPlay);
+        }}
       >
-        <IconSymbol
-          name="chevron.right"
-          size={24}
-          color={canGoForward ? colors.tint : colors.tabIconDefault}
-        />
-      </TouchableOpacity>
+        <Text style={styles.cancelButtonText}>Play</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.button, styles.cancelButton]}
+        onPress={() => {
+          webViewRef.current?.reload()
+        }}
+      >
+        <Text style={styles.cancelButtonText}>Reload</Text>
+      </Pressable>
 
       <TouchableOpacity
         onPress={() => webViewRef.current?.reload()}
@@ -269,7 +298,7 @@ export default function WebViewScreen() {
     <GestureHandlerRootView>
       <ThemedView style={styles.container}>
         <ProgressBar />
-        <ScrollView
+        {/* <ScrollView
           contentContainerStyle={styles.scrollView}
           refreshControl={
             <RefreshControl
@@ -278,28 +307,32 @@ export default function WebViewScreen() {
               tintColor={colors.tint}
             />
           }
-        >
-          <WebView
-            ref={webViewRef}
-            source={{ uri: 'https://dapp-coprocessor-frontend.vercel.app/' }}
-            style={styles.webview}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => setIsLoading(false)}
-            onLoadProgress={onLoadProgress}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            onNavigationStateChange={onNavigationStateChange}
-            bounces={false}
-            overScrollMode="never"
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              console.warn('WebView error: ', nativeEvent);
-            }}
-            injectedJavaScriptBeforeContentLoaded={injectedJS}
-            onMessage={handleMessage}
-            webviewDebuggingEnabled={true}
-          />
-        </ScrollView>
+        > */}
+        <WebView
+          ref={webViewRef}
+          source={{
+            // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
+            uri: 'https://app.rives.io/play/bba40250eaebbba40250eaebcfee7c08a98f4b56',
+            // uri: 'https://app.rives.io/play/a612d46cd43fa612d46cd43fcfee7c08a98f4b56',
+          }}
+          style={styles.webview}
+          onLoadStart={() => setIsLoading(true)}
+          onLoadEnd={() => setIsLoading(false)}
+          onLoadProgress={onLoadProgress}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          onNavigationStateChange={onNavigationStateChange}
+          bounces={false}
+          overScrollMode="never"
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.warn('WebView error: ', nativeEvent);
+          }}
+          injectedJavaScriptBeforeContentLoaded={injectedJS}
+          onMessage={handleMessage}
+          webviewDebuggingEnabled={true}
+        />
+        {/* </ScrollView> */}
 
         {isLoading && (
           <ActivityIndicator
@@ -309,7 +342,7 @@ export default function WebViewScreen() {
           />
         )}
 
-        {/* <NavigationBar /> */}
+        <NavigationBar />
 
         <Modal
           visible={modalVisible}
