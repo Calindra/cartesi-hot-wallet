@@ -20,12 +20,19 @@ export default function Home() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>
+      
       <Link href={{
         pathname: "/(tabs)/webview",
         params: {
           gameURL: "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs"
         }
       }}><ThemedText>Gamepad test</ThemedText></Link>
+      <Link href={{
+        pathname: "/(tabs)/webview",
+        params: {
+          gameURL: "https://mainnet-v5.rives.io/data/cartridges/721f735bbca3"
+        }
+      }}><ThemedText>Free Doom</ThemedText></Link>
       <Link href={{
         pathname: "/(tabs)/webview",
         params: {
