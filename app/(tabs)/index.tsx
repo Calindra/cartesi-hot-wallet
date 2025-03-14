@@ -22,7 +22,7 @@ export default function Home() {
       </ThemedView>
       
       <Link href={{
-        pathname: "/(tabs)/webview",
+        pathname: "/fullscreen",
         params: {
           gameURL: "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs"
         }

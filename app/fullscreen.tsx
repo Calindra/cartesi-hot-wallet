@@ -7,7 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
-import { useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 const { height, width } = Dimensions.get("window");
@@ -82,7 +82,7 @@ const injectedJS = `
 
 const currentTransaction: any = {}
 
-export default function WebViewScreen() {
+export default function FullScreen() {
   const { gameURL } = useLocalSearchParams();
 
   const webViewRef = useRef<WebView>(null);
@@ -247,93 +247,96 @@ export default function WebViewScreen() {
   };
 
   return (
-    <GestureHandlerRootView>
-      <ThemedView style={styles.container}>
-        <ProgressBar />
-        <WebView
-          ref={webViewRef}
-          source={{
-            // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-            // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-            uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
-          }}
-          style={styles.webview}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadEnd={() => setIsLoading(false)}
-          onLoadProgress={onLoadProgress}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          bounces={false}
-          overScrollMode="never"
-          onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
-          }}
-          injectedJavaScriptBeforeContentLoaded={injectedJS}
-          injectedJavaScript={injectJS}
-          onMessage={handleMessage}
-          webviewDebuggingEnabled={true}
-        />
-        {isLoading && (
-          <ActivityIndicator
-            style={styles.loader}
-            size="large"
-            color={colors.tint}
+    <>
+      <Stack.Screen options={{ headerTitle: "Game", headerShown: false }} />
+      <StatusBar hidden />
+      <GestureHandlerRootView>
+        <ThemedView style={styles.container}>
+          <ProgressBar />
+          <WebView
+            ref={webViewRef}
+            source={{
+              // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
+              // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
+              uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
+            }}
+            style={styles.webview}
+            onLoadStart={() => setIsLoading(true)}
+            onLoadEnd={() => setIsLoading(false)}
+            onLoadProgress={onLoadProgress}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            bounces={false}
+            overScrollMode="never"
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.warn('WebView error: ', nativeEvent);
+            }}
+            injectedJavaScriptBeforeContentLoaded={injectedJS}
+            injectedJavaScript={injectJS}
+            onMessage={handleMessage}
+            webviewDebuggingEnabled={true}
           />
-        )}
-        <Modal
-          visible={modalVisible}
-          transparent={true}
-          animationType="slide" // Changed to slide for better UX
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalContainer}
-            activeOpacity={1} // Prevents opacity flash
-            onPress={() => setModalVisible(false)} // Close on background press
+          {isLoading && (
+            <ActivityIndicator
+              style={styles.loader}
+              size="large"
+              color={colors.tint}
+            />
+          )}
+          <Modal
+            visible={modalVisible}
+            transparent={true}
+            animationType="slide" // Changed to slide for better UX
+            onRequestClose={() => setModalVisible(false)}
           >
-            <View
-              style={styles.modalContent}
-              onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
+            <TouchableOpacity
+              style={styles.modalContainer}
+              activeOpacity={1} // Prevents opacity flash
+              onPress={() => setModalVisible(false)} // Close on background press
             >
-              <Text style={styles.modalTitle}>Confirm Transaction</Text>
-              <Text style={styles.modalMessage}>
-                Are you sure you want to send this transaction?
-              </Text>
-              <View style={styles.buttonContainer}>
-                <Pressable
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={cancelTransaction}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.button, styles.confirmButton]}
-                  onPress={handleTransaction}
-                >
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
-                </Pressable>
+              <View
+                style={styles.modalContent}
+                onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
+              >
+                <Text style={styles.modalTitle}>Confirm Transaction</Text>
+                <Text style={styles.modalMessage}>
+                  Are you sure you want to send this transaction?
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <Pressable
+                    style={[styles.button, styles.cancelButton]}
+                    onPress={cancelTransaction}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.button, styles.confirmButton]}
+                    onPress={handleTransaction}
+                  >
+                    <Text style={styles.confirmButtonText}>Confirm</Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      </ThemedView>
-    </GestureHandlerRootView>
+            </TouchableOpacity>
+          </Modal>
+        </ThemedView>
+      </GestureHandlerRootView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // paddingTop: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight,
-    paddingTop: Platform.OS === 'ios' ? 50 : StatusBar.currentHeight,
+    paddingTop: 0,
   },
   webview: {
     flex: 1,
