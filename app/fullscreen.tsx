@@ -11,15 +11,17 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 const { height, width } = Dimensions.get("window");
-const paddingBottom = Platform.OS === 'ios' ? 120 : (Platform.OS === 'android' ? 40 : 0);
+const paddingBottom = 30;
 const injectedJS = `
-    window.innerHeight = ${height - paddingBottom};
+    window.innerHeight = ${Math.min(width, height) - paddingBottom};
+    console.log("=> width", ${width});
+    console.log("=> height", ${height});
     window.__deviceOrientation = {
-      enabled:true,
-      right: 6.9,
-      left: -6.9,
-      up: 42,
-      down: 50,
+      enabled: true,
+      right: 3,
+      left: -3,
+      up: -41,
+      down: -51,
     };
     (() => {
       const listeners = {};
@@ -265,7 +267,8 @@ export default function FullScreen() {
               // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-              uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
+              // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
+              uri: 'https://ipfs.io/ipfs/bafybeihnyt4q2m5lyakkge5znfpsnkg6s53os2s6y6b5hq5mn6ypfcv6jq/landscape-fullscreen.html'
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}

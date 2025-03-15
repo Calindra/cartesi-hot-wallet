@@ -28,7 +28,8 @@ export default function Home() {
         }
       }}><ThemedText>Gamepad test</ThemedText></Link>
       <Link href={{
-        pathname: "/(tabs)/webview",
+        // pathname: "/(tabs)/webview",
+        pathname: "/fullscreen",
         params: {
           gameURL: "https://mainnet-v5.rives.io/data/cartridges/721f735bbca3"
         }
