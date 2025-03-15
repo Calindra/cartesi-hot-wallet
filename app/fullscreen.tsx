@@ -109,7 +109,6 @@ export default function FullScreen() {
   useEffect(() => {
     if (webViewRef.current) {
       const changeGameJS = `
-        document.body.style.overflow = 'hidden';
         rivemuUploadCartridge("${gameURL}");
         true;
       `
@@ -268,7 +267,7 @@ export default function FullScreen() {
               // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
-              uri: 'https://ipfs.io/ipfs/bafybeihnyt4q2m5lyakkge5znfpsnkg6s53os2s6y6b5hq5mn6ypfcv6jq/landscape-fullscreen.html'
+              uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html'
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}

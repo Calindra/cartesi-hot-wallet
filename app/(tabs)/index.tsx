@@ -1,11 +1,22 @@
 import { StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, usePathname } from 'expo-router';
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const pathname = usePathname();
+  const changeOrientation = async () => {
+    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+  };
+  useEffect(() => {
+    if (pathname === "/") {
+      // changeOrientation();
+    }
+  }, [pathname])
   return (
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -20,7 +31,7 @@ export default function Home() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>
-      
+
       <Link href={{
         pathname: "/fullscreen",
         params: {
@@ -46,7 +57,7 @@ export default function Home() {
           gameURL: "https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f"
         }
       }}><ThemedText>Slalom</ThemedText></Link>
-      
+
       <Link href={{
         pathname: "/(tabs)/webview",
         params: {

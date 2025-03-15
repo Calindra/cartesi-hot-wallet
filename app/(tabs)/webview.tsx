@@ -100,10 +100,6 @@ export default function WebViewScreen() {
   true; // To ensure execution is finished
   `
 
-  const changeOrientation = async () => {
-    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-  };
-
   useEffect(() => {
     if (webViewRef.current) {
       const changeGameJS = `
@@ -112,7 +108,6 @@ export default function WebViewScreen() {
         true;
       `
       webViewRef.current.injectJavaScript(changeGameJS);
-      changeOrientation();
     }
   }, [gameURL, webViewRef])
 
