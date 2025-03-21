@@ -13,9 +13,10 @@ import * as NavigationBar from "expo-navigation-bar";
 
 const { height, width } = Dimensions.get("window");
 const paddingBottom = 30;
+
 const injectedJS = `
     window.innerHeight = ${Math.min(width, height) - paddingBottom};
-    window.innerWidth = ${Math.max(width, height) + 60};
+    window.innerWidth = ${Math.max(width, height)};
     console.log("=> width", ${width});
     console.log("=> height", ${height});
     window.__deviceOrientation = {
@@ -100,24 +101,33 @@ export default function FullScreen() {
 
   const injectJS = `
   document.body.style.overflow = 'hidden';
-  rivemuUploadCartridge("${gameURL}" || "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs");
+  rivemuUploadCartridge("${gameURL}")
+    .then(() => {
+      resizeCanvas();
+    })
   true; // To ensure execution is finished
   `
 
   const changeOrientation = async () => {
     await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+    console.log('Set orientation to LANDSCAPE_RIGHT')
   };
 
   useEffect(() => {
+    changeOrientation();
     if (webViewRef.current) {
       const changeGameJS = `
-        rivemuUploadCartridge("${gameURL}");
+        console.log("loading...");
+        rivemuUploadCartridge("${gameURL}")
+          .then(() => {
+            resizeCanvas();
+          })
         true;
       `
       webViewRef.current.injectJavaScript(changeGameJS);
-      changeOrientation();
-      NavigationBar.setVisibilityAsync("hidden"); // Hides the nav bar
-      // NavigationBar.setBehaviorAsync('');
+      if (Platform.OS === 'android') {
+        NavigationBar.setVisibilityAsync("hidden");
+      }
     }
   }, [gameURL, webViewRef])
 

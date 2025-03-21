@@ -66,5 +66,4 @@ class WalletService {
 }
 
 const walletService = new WalletService();
-console.log('wallet service')
 export { walletService };
