@@ -9,11 +9,13 @@ import { walletService } from '@/src/services/WalletService';
 import LoginContext from '@/hooks/loginContext';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import * as NavigationBar from "expo-navigation-bar";
 
 const { height, width } = Dimensions.get("window");
 const paddingBottom = 30;
 const injectedJS = `
     window.innerHeight = ${Math.min(width, height) - paddingBottom};
+    window.innerWidth = ${Math.max(width, height) + 60};
     console.log("=> width", ${width});
     console.log("=> height", ${height});
     window.__deviceOrientation = {
@@ -114,6 +116,8 @@ export default function FullScreen() {
       `
       webViewRef.current.injectJavaScript(changeGameJS);
       changeOrientation();
+      NavigationBar.setVisibilityAsync("hidden"); // Hides the nav bar
+      // NavigationBar.setBehaviorAsync('');
     }
   }, [gameURL, webViewRef])
 
