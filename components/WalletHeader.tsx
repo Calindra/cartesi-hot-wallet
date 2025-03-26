@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import LoginContext from '@/hooks/loginContext';
+import * as Clipboard from 'expo-clipboard';
 
 interface WalletHeaderProps {
     setShowLogin: (value: boolean) => void
@@ -10,9 +11,17 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
     const colorScheme = useColorScheme();
+    const [copied, setCopied] = useState(false);
     const { address } = useContext(LoginContext);
     const colors = Colors[colorScheme ?? 'light'];
 
+    const copyToClipboard = async () => {
+        await Clipboard.setStringAsync(address);
+        setCopied(true);
+        setTimeout(() => {
+            setCopied(false);
+        }, 1000)
+    };
     const handleConnect = () => {
         setShowLogin(true)
     };
@@ -22,9 +31,19 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
             <View style={[styles.container, { backgroundColor: colors.background }]}>
                 <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
                     {address ? (
-                        <Text style={[styles.addressText, { color: colors.text }]}>
-                            {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
-                        </Text>
+                        <TouchableOpacity
+                            onPress={copyToClipboard}
+                        >
+                            {copied ? (
+                                <Text style={[styles.addressText, { color: colors.text }]}>
+                                    Copied!
+                                </Text>
+                            ) : (
+                                <Text style={[styles.addressText, { color: colors.text }]}>
+                                    {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
                     ) : (
                         <TouchableOpacity
                             style={[styles.connectButton, { backgroundColor: colors.tint }]}
