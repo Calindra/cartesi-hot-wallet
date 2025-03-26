@@ -16,7 +16,7 @@ interface GameData {
   webview: boolean
 }
 
-// Game data: could come from an API
+// TODO: could come from an API
 const gameData: GameData[] = [
   {
     id: '1',

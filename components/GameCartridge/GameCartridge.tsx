@@ -8,6 +8,7 @@ interface GameCardProps {
 }
 
 const cartridgeBackground = require('../../assets/images/cartridge.png') // Make sure to place the cartridge.png in the same directory
+const rivesLogo = require('../../assets/images/logo-rives.png')
 
 const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Cartesi Foundation' }) => {
   return (
@@ -16,6 +17,7 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
         <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
       </View>
       <View style={styles.contentContainer}>
+        <Image source={rivesLogo} style={styles.rivesLogo} />
         <View style={styles.imageContainer}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.gameImage} resizeMode="cover" />
@@ -39,7 +41,7 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
 const styles = StyleSheet.create({
   cartridgeContainer: {
     width: 150,
-    height: 200,
+    height: 230,
     display: 'flex',
   },
   backgroundContainer: {
@@ -53,13 +55,16 @@ const styles = StyleSheet.create({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    padding: 20,
+    padding: 16,
   },
   imageContainer: {
     flex: 1,
-    marginBottom: 15,
+    marginVertical: 10,
     borderRadius: 10,
     overflow: 'hidden',
+  },
+  rivesLogo: {
+    width: '40%',
   },
   gameImage: {
     width: '100%',

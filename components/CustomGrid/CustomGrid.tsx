@@ -83,17 +83,17 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 10,
-    paddingHorizontal: 10, // Add horizontal padding
+    paddingTop: 8,
+    paddingHorizontal: 8, // Add horizontal padding
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   columnContainer: {
     flex: 1, // Use flex to distribute space evenly
-    marginHorizontal: 5, // Reduce margin for better spacing
+    marginHorizontal: 6, // Reduce margin for better spacing
     alignItems: 'center',
     width: '100%', // Ensure full width within container
   },
