@@ -1,17 +1,29 @@
-import React, { useRef, useState, useContext, useEffect } from 'react';
-import { StyleSheet, ActivityIndicator, View, TouchableOpacity, Animated, Modal, Text, Pressable, Platform, StatusBar, Dimensions } from 'react-native';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
-import { ThemedView } from '@/components/ThemedView';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { walletService } from '@/src/services/WalletService';
-import LoginContext from '@/hooks/loginContext';
-import { useLocalSearchParams } from 'expo-router';
-import * as ScreenOrientation from 'expo-screen-orientation';
+import { ThemedView } from '@/components/ThemedView'
+import { Colors } from '@/constants/Colors'
+import LoginContext from '@/hooks/loginContext'
+import { useColorScheme } from '@/hooks/useColorScheme'
+import { walletService } from '@/src/services/WalletService'
+import { useLocalSearchParams } from 'expo-router'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import {
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import WebView, { WebViewMessageEvent } from 'react-native-webview'
 
-const { height, width } = Dimensions.get("window");
-const paddingBottom = Platform.OS === 'ios' ? 120 : (Platform.OS === 'android' ? 40 : 0);
+//todo: ESSA É A ABA RIVES NO BORUMBÁ
+const { height, width } = Dimensions.get('window')
+const paddingBottom = Platform.OS === 'ios' ? 120 : Platform.OS === 'android' ? 40 : 0
 const injectedJS = `
     window.innerHeight = ${height - paddingBottom};
     window.__deviceOrientation = {
@@ -78,21 +90,21 @@ const injectedJS = `
       };
     })();
     true;
-`;
+`
 
 const currentTransaction: any = {}
 
 export default function WebViewScreen() {
-  const { gameURL } = useLocalSearchParams();
+  const { gameURL } = useLocalSearchParams()
 
-  const webViewRef = useRef<WebView>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false);
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const { setAddress } = useContext(LoginContext);
+  const webViewRef = useRef<WebView>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [progress, setProgress] = useState(0)
+  const [modalVisible, setModalVisible] = useState(false)
+  const progressAnim = useRef(new Animated.Value(0)).current
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+  const { setAddress } = useContext(LoginContext)
 
   const injectJS = `
   document.body.style.overflow = 'hidden';
@@ -107,18 +119,18 @@ export default function WebViewScreen() {
         rivemuUploadCartridge("${gameURL}");
         true;
       `
-      webViewRef.current.injectJavaScript(changeGameJS);
+      webViewRef.current.injectJavaScript(changeGameJS)
     }
   }, [gameURL, webViewRef])
 
   const onLoadProgress = ({ nativeEvent }: { nativeEvent: { progress: number } }) => {
-    setProgress(nativeEvent.progress);
+    setProgress(nativeEvent.progress)
     Animated.timing(progressAnim, {
       toValue: nativeEvent.progress,
       duration: 200,
       useNativeDriver: false,
-    }).start();
-  };
+    }).start()
+  }
 
   const ProgressBar = () => {
     return progress !== 1 ? (
@@ -134,8 +146,8 @@ export default function WebViewScreen() {
           },
         ]}
       />
-    ) : null;
-  };
+    ) : null
+  }
 
   const handleTransaction = async () => {
     setModalVisible(false)
@@ -145,8 +157,8 @@ export default function WebViewScreen() {
       return
     }
     const txHash = await client.sendTransaction(currentTransaction.params)
-    console.log('Transaction Hash:', txHash);
-    const result = txHash;
+    console.log('Transaction Hash:', txHash)
+    const result = txHash
     console.log('result', result)
     const response = {
       reqId: currentTransaction.request.reqId,
@@ -155,9 +167,9 @@ export default function WebViewScreen() {
     const eventScript = `
       window.ethereum.responseReceiver(${JSON.stringify(response)});
       true; // To ensure execution is finished
-    `;
+    `
     if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(eventScript);
+      webViewRef.current.injectJavaScript(eventScript)
     }
   }
 
@@ -166,15 +178,15 @@ export default function WebViewScreen() {
     const response = {
       reqId: currentTransaction.request.reqId,
       error: {
-        message: `The user canceled the transaction`
+        message: `The user canceled the transaction`,
       },
     }
     const eventScript = `
       window.ethereum.responseReceiver(${JSON.stringify(response)});
       true; // To ensure execution is finished
-    `;
+    `
     if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(eventScript);
+      webViewRef.current.injectJavaScript(eventScript)
     }
   }
 
@@ -184,12 +196,12 @@ export default function WebViewScreen() {
       // TODO: open the login screen
       console.log('No client!')
       setAddress('')
-      return;
+      return
     }
-    const message = event.nativeEvent.data; // Get message from WebView
+    const message = event.nativeEvent.data // Get message from WebView
     // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
-      const request = JSON.parse(message);
+      const request = JSON.parse(message)
       console.log('Raw request', request)
       if (request.method === 'request') {
         try {
@@ -210,7 +222,7 @@ export default function WebViewScreen() {
             setModalVisible(true)
             return
           } else {
-            result = await client.request(request.args);
+            result = await client.request(request.args)
           }
           console.log('result', result)
           const response = {
@@ -220,8 +232,8 @@ export default function WebViewScreen() {
           const eventScript = `
             window.ethereum.responseReceiver(${JSON.stringify(response)});
             true; // To ensure execution is finished
-          `;
-          webViewRef.current.injectJavaScript(eventScript);
+          `
+          webViewRef.current.injectJavaScript(eventScript)
         } catch (e) {
           console.error(e)
         }
@@ -235,11 +247,11 @@ export default function WebViewScreen() {
         const eventScript = `
           window.ethereum.eventReceiver(${JSON.stringify(response)});
           true; // To ensure execution is finished
-        `;
-        webViewRef.current.injectJavaScript(eventScript);
+        `
+        webViewRef.current.injectJavaScript(eventScript)
       }
     }
-  };
+  }
 
   return (
     <GestureHandlerRootView>
@@ -257,7 +269,7 @@ export default function WebViewScreen() {
             // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
             // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
             // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-            uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
+            uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html',
           }}
           style={styles.webview}
           onLoadStart={() => setIsLoading(true)}
@@ -268,21 +280,15 @@ export default function WebViewScreen() {
           bounces={false}
           overScrollMode="never"
           onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.warn('WebView error: ', nativeEvent);
+            const { nativeEvent } = syntheticEvent
+            console.warn('WebView error: ', nativeEvent)
           }}
           injectedJavaScriptBeforeContentLoaded={injectedJS}
           injectedJavaScript={injectJS}
           onMessage={handleMessage}
           webviewDebuggingEnabled={true}
         />
-        {isLoading && (
-          <ActivityIndicator
-            style={styles.loader}
-            size="large"
-            color={colors.tint}
-          />
-        )}
+        {isLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.tint} />}
         <Modal
           visible={modalVisible}
           transparent={true}
@@ -299,20 +305,12 @@ export default function WebViewScreen() {
               onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
             >
               <Text style={styles.modalTitle}>Confirm Transaction</Text>
-              <Text style={styles.modalMessage}>
-                Are you sure you want to send this transaction?
-              </Text>
+              <Text style={styles.modalMessage}>Are you sure you want to send this transaction?</Text>
               <View style={styles.buttonContainer}>
-                <Pressable
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={cancelTransaction}
-                >
+                <Pressable style={[styles.button, styles.cancelButton]} onPress={cancelTransaction}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </Pressable>
-                <Pressable
-                  style={[styles.button, styles.confirmButton]}
-                  onPress={handleTransaction}
-                >
+                <Pressable style={[styles.button, styles.confirmButton]} onPress={handleTransaction}>
                   <Text style={styles.confirmButtonText}>Confirm</Text>
                 </Pressable>
               </View>
@@ -321,7 +319,7 @@ export default function WebViewScreen() {
         </Modal>
       </ThemedView>
     </GestureHandlerRootView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -407,4 +405,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+})
