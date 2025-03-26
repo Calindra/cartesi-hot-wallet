@@ -1,22 +1,116 @@
-import { StyleSheet } from 'react-native';
-import { Link, usePathname } from 'expo-router';
-import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { useEffect } from 'react';
+import GameCartridge from '@/components/GameCartridge/GameCartridge'
+import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet'
+import { IconSymbol } from '@/components/ui/IconSymbol'
+import { Link, usePathname } from 'expo-router'
+import * as ScreenOrientation from 'expo-screen-orientation'
+import React, { useEffect, useState } from 'react'
+import { Dimensions, FlatList, ScrollView, StyleSheet } from 'react-native'
+
+// Define the type for game data
+interface GameData {
+  id: string
+  title: string
+  author: string
+  imageUrl: string
+  gameURL: string
+  webview: boolean
+}
+
+// Game data: could come from an API
+const gameData: GameData[] = [
+  {
+    id: '1',
+    title: 'Gamepad Test',
+    author: 'Calindra',
+    imageUrl: 'https://i.imgur.com/FePyexY.jpeg',
+    gameURL: 'https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs',
+    webview: false,
+  },
+  {
+    id: '2',
+    title: 'Free Doom',
+    author: 'Dude',
+    imageUrl: 'https://rives.io/img/carts/freedoom.png',
+    gameURL: 'https://mainnet-v5.rives.io/data/cartridges/721f735bbca3',
+    webview: false,
+  },
+  {
+    id: '3',
+    title: 'Rives Raid',
+    author: 'Rives',
+    imageUrl: 'https://via.placeholder.com/150',
+    gameURL: 'https://mainnet-v5.rives.io/data/cartridges/40b0cb5ee306',
+    webview: true,
+  },
+  {
+    id: '4',
+    title: 'Slalom',
+    author: '',
+    imageUrl: 'https://via.placeholder.com/150',
+    gameURL: 'https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f',
+    webview: true,
+  },
+  {
+    id: '5',
+    title: 'Pakboy',
+    author: '',
+    imageUrl: 'https://via.placeholder.com/150',
+    gameURL: 'https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb',
+    webview: true,
+  },
+]
 
 export default function Home() {
-  const pathname = usePathname();
+  const pathname = usePathname()
+
+  // State to track current window width
+  const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width)
+
+  // Change orientation
   const changeOrientation = async () => {
-    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-  };
+    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
+  }
+
+  // Update window width on device rotation or resize
   useEffect(() => {
-    if (pathname === "/") {
-      changeOrientation();
+    const updateLayout = () => {
+      setWindowWidth(Dimensions.get('window').width)
+    }
+
+    // Add event listener
+    const subscription = Dimensions.addEventListener('change', updateLayout)
+
+    // Initial orientation lock
+    if (pathname === '/') {
+      changeOrientation()
+    }
+
+    // Cleanup listener
+    return () => {
+      subscription.remove()
     }
   }, [pathname])
+
+  // Determine number of columns based on width
+  const getNumberOfColumns = () => {
+    return windowWidth < 768 ? 2 : 3
+  }
+
+  // Render individual game cartridge with TypeScript typing
+  const renderGameCartridge = ({ item }: { item: GameData }) => (
+    <Link
+      href={{
+        pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
+        params: {
+          gameURL: item.gameURL,
+        },
+      }}
+      style={styles.cartridgeContainer}
+    >
+      <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
+    </Link>
+  )
+
   return (
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -27,45 +121,20 @@ export default function Home() {
           name="chevron.left.forwardslash.chevron.right"
           style={styles.headerImage}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-
-      <Link href={{
-        pathname: "/fullscreen",
-        params: {
-          gameURL: "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs"
-        }
-      }}><ThemedText>Gamepad test</ThemedText></Link>
-      <Link href={{
-        // pathname: "/(tabs)/webview",
-        pathname: "/fullscreen",
-        params: {
-          gameURL: "https://mainnet-v5.rives.io/data/cartridges/721f735bbca3"
-        }
-      }}><ThemedText>Free Doom</ThemedText></Link>
-      <Link href={{
-        pathname: "/(tabs)/webview",
-        params: {
-          gameURL: "https://mainnet-v5.rives.io/data/cartridges/40b0cb5ee306"
-        }
-      }}><ThemedText>Rives Raid</ThemedText></Link>
-      <Link href={{
-        pathname: "/(tabs)/webview",
-        params: {
-          gameURL: "https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f"
-        }
-      }}><ThemedText>Slalom</ThemedText></Link>
-
-      <Link href={{
-        pathname: "/(tabs)/webview",
-        params: {
-          gameURL: "https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb"
-        }
-      }}><ThemedText>Pakboy</ThemedText></Link>
+      }
+    >
+      <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+        <FlatList
+          data={gameData}
+          renderItem={renderGameCartridge}
+          keyExtractor={(item) => item.id}
+          numColumns={getNumberOfColumns()}
+          key={getNumberOfColumns()}
+          contentContainerStyle={styles.gridContainer}
+        />
+      </ScrollView>
     </ParallaxScrollViewWithWallet>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -75,8 +144,15 @@ const styles = StyleSheet.create({
     left: -35,
     position: 'absolute',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  gridContainer: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
   },
-});
+  cartridgeContainer: {
+    flex: 1,
+    margin: 5,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
+})
