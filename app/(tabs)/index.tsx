@@ -1,10 +1,10 @@
-import GameCartridge from '@/components/GameCartridge/GameCartridge'
+import CustomGrid from '@/components/CustomGrid/CustomGrid'
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet'
 import { IconSymbol } from '@/components/ui/IconSymbol'
-import { Link, usePathname } from 'expo-router'
+import { usePathname } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useEffect, useState } from 'react'
-import { Dimensions, FlatList, ScrollView, StyleSheet } from 'react-native'
+import { Dimensions, ScrollView, StyleSheet } from 'react-native'
 
 // Define the type for game data
 interface GameData {
@@ -91,26 +91,6 @@ export default function Home() {
     }
   }, [pathname])
 
-  // Determine number of columns based on width
-  const getNumberOfColumns = () => {
-    return windowWidth < 768 ? 2 : 3
-  }
-
-  // Render individual game cartridge with TypeScript typing
-  const renderGameCartridge = ({ item }: { item: GameData }) => (
-    <Link
-      href={{
-        pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
-        params: {
-          gameURL: item.gameURL,
-        },
-      }}
-      style={styles.cartridgeContainer}
-    >
-      <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
-    </Link>
-  )
-
   return (
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -124,14 +104,7 @@ export default function Home() {
       }
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
-        <FlatList
-          data={gameData}
-          renderItem={renderGameCartridge}
-          keyExtractor={(item) => item.id}
-          numColumns={getNumberOfColumns()}
-          key={getNumberOfColumns()}
-          contentContainerStyle={styles.gridContainer}
-        />
+        <CustomGrid data={gameData} />
       </ScrollView>
     </ParallaxScrollViewWithWallet>
   )
