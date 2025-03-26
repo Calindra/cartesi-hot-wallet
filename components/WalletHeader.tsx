@@ -1,19 +1,20 @@
-import React, { useContext, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform, StatusBar } from 'react-native';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import LoginContext from '@/hooks/loginContext';
+import { Colors } from '@/constants/Colors'
+import LoginContext from '@/hooks/loginContext'
+import { useColorScheme } from '@/hooks/useColorScheme'
+import React, { useContext, useState } from 'react'
+import { Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard';
 
 interface WalletHeaderProps {
     setShowLogin: (value: boolean) => void
+    setShowOnboarding: (value: boolean) => void
 }
 
-export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
-    const colorScheme = useColorScheme();
-    const [copied, setCopied] = useState(false);
-    const { address } = useContext(LoginContext);
-    const colors = Colors[colorScheme ?? 'light'];
+export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
+    const colorScheme = useColorScheme()
+    const { address } = useContext(LoginContext)
+    const colors = Colors[colorScheme ?? 'light']
+    const [copied, setCopied] = useState(false)
 
     const copyToClipboard = async () => {
         await Clipboard.setStringAsync(address);
@@ -22,18 +23,26 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
             setCopied(false);
         }, 1000)
     };
+
     const handleConnect = () => {
         setShowLogin(true)
-    };
+    }
+
+    const handleOnboarding = () => {
+        setShowOnboarding(true)
+    }
 
     return (
         <>
             <View style={[styles.container, { backgroundColor: colors.background }]}>
+                <View>
+                    <TouchableOpacity style={[styles.connectButton]} onPress={handleOnboarding}>
+                        <Text> What is a hot wallet?</Text>
+                    </TouchableOpacity>
+                </View>
                 <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
                     {address ? (
-                        <TouchableOpacity
-                            onPress={copyToClipboard}
-                        >
+                        <TouchableOpacity onPress={copyToClipboard}>
                             {copied ? (
                                 <Text style={[styles.addressText, { color: colors.text }]}>
                                     Copied!
@@ -45,18 +54,15 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin }) => {
                             )}
                         </TouchableOpacity>
                     ) : (
-                        <TouchableOpacity
-                            style={[styles.connectButton, { backgroundColor: colors.tint }]}
-                            onPress={handleConnect}
-                        >
+                        <TouchableOpacity style={[styles.connectButton, { backgroundColor: colors.tint }]} onPress={handleConnect}>
                             <Text style={styles.connectButtonText}>Connect Wallet</Text>
                         </TouchableOpacity>
                     )}
                 </View>
             </View>
         </>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -65,6 +71,10 @@ const styles = StyleSheet.create({
         zIndex: 100,
         position: 'absolute',
         top: 0,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     headerContent: {
         height: 60,
@@ -87,4 +97,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
     },
-});
+})

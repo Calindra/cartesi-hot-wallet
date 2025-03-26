@@ -1,66 +1,65 @@
-import React, { useState } from "react";
+import { Feather } from '@expo/vector-icons'
+import React, { useState } from 'react'
 import {
-  View,
+  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Animated,
-  ViewStyle,
   TextStyle,
-} from "react-native";
-import { Feather } from '@expo/vector-icons';
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  ViewStyle,
+} from 'react-native'
 
 export interface LoginCredentials {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 
 interface LoginModalProps {
-  isVisible: boolean;
-  onClose: () => void;
-  onLogin: (credentials: LoginCredentials) => Promise<void>;
+  isVisible: boolean
+  onClose: () => void
+  onLogin: (credentials: LoginCredentials) => Promise<void>
 }
 
 interface Styles {
-  modalContainer: ViewStyle;
-  overlay: ViewStyle;
-  modalContent: ViewStyle;
-  headerContainer: ViewStyle;
-  closeButton: ViewStyle;
-  card: ViewStyle;
-  userIcon: ViewStyle;
-  title: TextStyle;
-  subtitle: TextStyle;
-  inputContainer: ViewStyle;
-  inputIconContainer: ViewStyle;
-  input: TextStyle;
-  eyeIcon: ViewStyle;
-  forgotPasswordButton: ViewStyle;
-  forgotPasswordText: TextStyle;
-  errorContainer: ViewStyle;
-  error: TextStyle;
-  button: ViewStyle;
-  buttonDisabled: ViewStyle;
-  buttonText: TextStyle;
-  signupContainer: ViewStyle;
-  signupText: TextStyle;
-  signupLink: TextStyle;
+  modalContainer: ViewStyle
+  overlay: ViewStyle
+  modalContent: ViewStyle
+  headerContainer: ViewStyle
+  closeButton: ViewStyle
+  card: ViewStyle
+  userIcon: ViewStyle
+  title: TextStyle
+  subtitle: TextStyle
+  inputContainer: ViewStyle
+  inputIconContainer: ViewStyle
+  input: TextStyle
+  eyeIcon: ViewStyle
+  forgotPasswordButton: ViewStyle
+  forgotPasswordText: TextStyle
+  errorContainer: ViewStyle
+  error: TextStyle
+  button: ViewStyle
+  buttonDisabled: ViewStyle
+  buttonText: TextStyle
+  signupContainer: ViewStyle
+  signupText: TextStyle
+  signupLink: TextStyle
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
 
-  const buttonScale = new Animated.Value(1);
+  const buttonScale = new Animated.Value(1)
 
   const handleButtonPress = (): void => {
     Animated.sequence([
@@ -74,23 +73,23 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
         duration: 100,
         useNativeDriver: true,
       }),
-    ]).start();
-  };
+    ]).start()
+  }
 
   const handleClose = (): void => {
-    setEmail("");
-    setPassword("");
-    setError("");
-    onClose();
-  };
+    setEmail('')
+    setPassword('')
+    setError('')
+    onClose()
+  }
 
   const validateEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  }
 
   const handleLogin = async (): Promise<void> => {
-    handleButtonPress();
-    setError("");
+    handleButtonPress()
+    setError('')
 
     // if (!email.trim()) {
     //   setError("Please enter your email");
@@ -103,33 +102,25 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     // }
 
     if (!password) {
-      setError("Please enter your password");
-      return;
+      setError('Please enter your password')
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await onLogin({ email, password });
-      handleClose();
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await onLogin({ email, password })
+      handleClose()
     } catch (e) {
-      setError("Invalid email or password");
+      setError('Invalid email or password')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
-    <Modal
-      visible={isVisible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalContainer}
-      >
+    <Modal visible={isVisible} transparent animationType="slide" onRequestClose={handleClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
@@ -143,23 +134,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
           <View style={styles.card}>
             <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
-            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.title}>Welcome</Text>
             <Text style={styles.subtitle}>Sign in to your account</Text>
-
-            {/* <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="mail" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor="#999"
-              />
-            </View> */}
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>
@@ -173,21 +149,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 onChangeText={setPassword}
                 placeholderTextColor="#999"
               />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Feather 
-                  name={showPassword ? "eye-off" : "eye"} 
-                  size={20} 
-                  color="#666" 
-                />
+              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.forgotPasswordButton}>
+            {/* <TouchableOpacity style={styles.forgotPasswordButton}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {error ? (
               <View style={styles.errorContainer}>
@@ -202,36 +171,36 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 onPress={handleLogin}
                 disabled={isLoading}
               >
-                <Text style={styles.buttonText}>
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Text>
+                <Text style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
               </TouchableOpacity>
             </Animated.View>
 
             <View style={styles.signupContainer}>
-              <Text style={styles.signupText}>Don't have an account? </Text>
-              <TouchableOpacity>
-                <Text style={styles.signupLink}>Sign Up</Text>
-              </TouchableOpacity>
+              <Text style={styles.signupText}>
+                Don't have an account? Remember, use a strong UNIQUE password to create one.
+              </Text>
+              <Text style={styles.signupText}>
+                The password you choose is the only attachment between you and your account
+              </Text>
             </View>
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create<Styles>({
   modalContainer: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: "#f5f6fa",
+    backgroundColor: '#f5f6fa',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
@@ -245,37 +214,37 @@ const styles = StyleSheet.create<Styles>({
     padding: 8,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingTop: 8,
   },
   userIcon: {
-    alignSelf: "center",
+    alignSelf: 'center',
     marginBottom: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#1a1a1a",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 24,
   },
   inputContainer: {
-    position: "relative",
+    position: 'relative',
     marginBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputIconContainer: {
-    position: "absolute",
+    position: 'absolute',
     left: 16,
     zIndex: 1,
   },
@@ -283,68 +252,69 @@ const styles = StyleSheet.create<Styles>({
     flex: 1,
     height: 56,
     borderWidth: 1.5,
-    borderColor: "#e1e1e1",
+    borderColor: '#e1e1e1',
     borderRadius: 12,
     paddingHorizontal: 48,
     fontSize: 16,
-    color: "#1a1a1a",
-    backgroundColor: "#fff",
+    color: '#1a1a1a',
+    backgroundColor: '#fff',
   },
   eyeIcon: {
-    position: "absolute",
+    position: 'absolute',
     right: 16,
   },
   forgotPasswordButton: {
-    alignSelf: "flex-end",
+    alignSelf: 'flex-end',
     marginBottom: 16,
   },
   forgotPasswordText: {
-    color: "#4a90e2",
+    color: '#4a90e2',
     fontSize: 14,
   },
   errorContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
     padding: 12,
-    backgroundColor: "#fff5f5",
+    backgroundColor: '#fff5f5',
     borderRadius: 8,
   },
   error: {
-    color: "#ff4d4d",
+    color: '#ff4d4d',
     marginLeft: 8,
     fontSize: 14,
   },
   button: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: '#4a90e2',
     height: 56,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonDisabled: {
-    backgroundColor: "#a0c5e8",
+    backgroundColor: '#a0c5e8',
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   signupContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 16,
   },
   signupText: {
-    color: "#666",
+    color: '#000',
     fontSize: 14,
+    textAlign: 'center',
   },
   signupLink: {
-    color: "#4a90e2",
+    color: '#4a90e2',
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
-export default LoginModal;
+export default LoginModal
