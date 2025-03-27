@@ -1,4 +1,4 @@
-import { walletAddressShortner } from '@/app/utils/walletAddressUtils'
+import { emailShortner, walletAddressShortner } from '@/app/utils/walletAddressUtils'
 import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
@@ -15,7 +15,7 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
   const colorScheme = useColorScheme()
-  const { address, logout } = useContext(LoginContext)
+  const { address, logout, email } = useContext(LoginContext)
   const colors = Colors[colorScheme ?? 'light']
   const [copied, setCopied] = useState(false)
   const [showWalletData, setShowWalletData] = useState(false)
@@ -50,6 +50,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
   }
 
   const handleLogout = () => {
+    setShowWalletData(false)
     logout()
   }
 
@@ -57,9 +58,11 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
     <>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View>
-          <TouchableOpacity style={[styles.connectButton]} onPress={handleOnboarding}>
-            <Text> What is a hot wallet?</Text>
-          </TouchableOpacity>
+          {!address && (
+            <TouchableOpacity style={[styles.connectButton]} onPress={handleOnboarding}>
+              <Text> What is a hot wallet?</Text>
+            </TouchableOpacity>
+          )}
         </View>
         <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
           {/* TOOD: mudar para address */}
@@ -69,7 +72,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
                 setShowWalletData(!showWalletData)
               }}
             >
-              <Text style={[styles.addressText, { color: colors.text }]}>{walletAddressShortner(address)}</Text>
+              <Text style={[styles.addressText, { color: colors.text }]}>{emailShortner(email)}</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={[styles.connectButton, { backgroundColor: colors.tint }]} onPress={handleConnect}>

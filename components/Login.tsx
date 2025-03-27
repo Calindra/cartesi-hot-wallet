@@ -1,5 +1,6 @@
+import LoginContext from '@/hooks/loginContext'
 import { Feather } from '@expo/vector-icons'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import {
   Animated,
   KeyboardAvoidingView,
@@ -54,7 +55,7 @@ interface Styles {
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
-  const [email, setEmail] = useState<string>('')
+  const { email, setEmail } = useContext(LoginContext)
   const [showEmail, setShowEmail] = useState<boolean>(false)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
@@ -79,7 +80,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   }
 
   const handleClose = (): void => {
-    setEmail('')
+    // setEmail('')
     setPassword('')
     setError('')
     onClose()
