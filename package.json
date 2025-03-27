@@ -21,6 +21,7 @@
     "@scure/bip32": "^1.6.2",
     "expo": "~52.0.37",
     "expo-blur": "~14.0.3",
+    "expo-clipboard": "~7.0.1",
     "expo-constants": "~17.0.7",
     "expo-font": "~13.0.4",
     "expo-haptics": "~14.0.1",
@@ -47,7 +48,7 @@
     "react-native-webview": "13.12.5",
     "stream-browserify": "^3.0.0",
     "viem": "^2.23.4",
-    "expo-clipboard": "~7.0.1"
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -55,6 +56,7 @@
     "@types/jest": "^29.5.12",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
+    "@types/zxcvbn": "^4.4.5",
     "eslint": "^8.57.0",
     "eslint-config-expo": "~8.0.1",
     "eslint-plugin-react": "^7.37.4",

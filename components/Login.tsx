@@ -14,6 +14,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native'
+import zxcvbn from 'zxcvbn'
 
 export interface LoginCredentials {
   email: string
@@ -88,6 +89,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
+  const validatePassword = (password: string): { passWordStrengthScore: number; timeToCrack: string | number } => {
+    const { score, calc_time, crack_times_seconds } = zxcvbn(password)
+    console.log('validatePassword', {
+      score,
+      calc_time,
+      timetoCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second,
+    })
+    return { passWordStrengthScore: score, timeToCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second }
+  }
+
   const handleLogin = async (): Promise<void> => {
     handleButtonPress()
     setError('')
@@ -104,6 +115,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
     if (!password) {
       setError('Please enter your password')
+      return
+    }
+
+    const { passWordStrengthScore, timeToCrack } = validatePassword(password)
+
+    if (passWordStrengthScore < 3) {
+      setError(`Please enter a stronger password.\nThat password would take ${timeToCrack}s to be broken`)
       return
     }
 
