@@ -54,6 +54,7 @@ interface Styles {
 
 const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
   const [email, setEmail] = useState<string>('')
+  const [showEmail, setShowEmail] = useState<boolean>(false)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -91,15 +92,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     handleButtonPress()
     setError('')
 
-    // if (!email.trim()) {
-    //   setError("Please enter your email");
-    //   return;
-    // }
+    if (!email.trim()) {
+      setError('Please enter your email')
+      return
+    }
 
-    // if (!validateEmail(email)) {
-    //   setError("Please enter a valid email");
-    //   return;
-    // }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email')
+      return
+    }
 
     if (!password) {
       setError('Please enter your password')
@@ -136,6 +137,23 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
             <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
             <Text style={styles.title}>Welcome</Text>
             <Text style={styles.subtitle}>Sign in to your account</Text>
+
+            <View style={styles.inputContainer}>
+              <View style={styles.inputIconContainer}>
+                <Feather name="lock" size={20} color="#666" />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                secureTextEntry={!showEmail}
+                value={email}
+                onChangeText={setEmail}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowEmail(!showEmail)}>
+                <Feather name={showEmail ? 'eye-off' : 'eye'} size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>

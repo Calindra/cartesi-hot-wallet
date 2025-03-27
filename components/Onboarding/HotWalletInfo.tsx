@@ -61,10 +61,7 @@ const HotWalletInfo: React.FC = () => {
       />
 
       <Text style={styles.sectionTitle}>Security Best Practices for Hot Wallets:</Text>
-      <BulletPoint
-        title="Strong Passwords"
-        text="Use strong, unique passwords for your hot wallet and enable multi-factor authentication (MFA)."
-      />
+      <BulletPoint title="Strong Passwords" text="Use STRONG and UNIQUE passwords for your hot wallet." />
       <BulletPoint
         title="Regularly Update Software"
         text="Keep your hot wallet software and operating system up to date to patch security vulnerabilities."
