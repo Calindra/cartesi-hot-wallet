@@ -1,69 +1,89 @@
+import { HDKey } from '@scure/bip32'
+import * as SecureStore from 'expo-secure-store'
 import {
-    Account,
-    Chain,
-    createWalletClient,
-    http,
-    PrivateKeyAccount,
-    toBytes,
-    Transport,
-    WalletClient
-} from "viem";
-import { holesky } from "viem/chains";
-import { HDKey } from '@scure/bip32';
-import { keccak256, hexToBytes, bytesToHex } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import * as SecureStore from "expo-secure-store";
+  Account,
+  bytesToHex,
+  Chain,
+  createPublicClient,
+  createWalletClient,
+  formatEther,
+  hexToBytes,
+  http,
+  keccak256,
+  PrivateKeyAccount,
+  toBytes,
+  Transport,
+  WalletClient,
+} from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { holesky } from 'viem/chains'
 
 class WalletService {
+  getCurrentWallet() {
+    const seed = SecureStore.getItem('user_password')
+    if (!seed) {
+      return
+    }
+    return this.createWalletFromSeed(seed)
+  }
 
-    getCurrentWallet() {
-        const seed = SecureStore.getItem("user_password")
-        if (!seed) {
-            return;
-        }
-        return this.createWalletFromSeed(seed);
+  createWalletFromSeed(seed: string) {
+    // Convert seed to bytes
+    const seedBytes = toBytes(seed)
+
+    // Apply Keccak-256 hash to the seed
+    const hashedSeed = keccak256(seedBytes)
+    console.log('Keccak-256 Hashed Seed:', hashedSeed)
+
+    // Convert hashed seed to bytes
+    const hashedSeedBytes = hexToBytes(hashedSeed)
+
+    // Use hashed seed to generate an HD wallet
+    const hdWallet = HDKey.fromMasterSeed(hashedSeedBytes)
+    const child = hdWallet.derive("m/44'/60'/0'/0/0") // Standard Ethereum derivation path
+
+    // Convert the private key to hex
+    const privateKey = child.privateKey ? bytesToHex(child.privateKey) : null
+
+    if (!privateKey) {
+      throw new Error('Failed to derive private key')
     }
 
-    createWalletFromSeed(seed: string) {
-        // Convert seed to bytes
-        const seedBytes = toBytes(seed);
+    console.log('Derived Private Key:', privateKey)
+    const account: PrivateKeyAccount = privateKeyToAccount(privateKey)
 
-        // Apply Keccak-256 hash to the seed
-        const hashedSeed = keccak256(seedBytes);
-        console.log('Keccak-256 Hashed Seed:', hashedSeed);
+    const client = createWalletClient({
+      account,
+      chain: holesky,
+      transport: http(),
+    })
+    return client
+  }
 
-        // Convert hashed seed to bytes
-        const hashedSeedBytes = hexToBytes(hashedSeed);
+  setCurrentWallet(seed: string): WalletClient<Transport, Chain, Account> {
+    SecureStore.setItemAsync('user_password', seed).catch((e) => console.error(e))
 
-        // Use hashed seed to generate an HD wallet
-        const hdWallet = HDKey.fromMasterSeed(hashedSeedBytes);
-        const child = hdWallet.derive("m/44'/60'/0'/0/0"); // Standard Ethereum derivation path
+    return this.createWalletFromSeed(seed)
+  }
 
-        // Convert the private key to hex
-        const privateKey = child.privateKey ? bytesToHex(child.privateKey) : null;
+  async getWalletBalance(address: `0x${string}`) {
+    const client = createPublicClient({
+      chain: holesky,
+      transport: http(),
+    })
 
-        if (!privateKey) {
-            throw new Error("Failed to derive private key");
-        }
-
-        console.log('Derived Private Key:', privateKey);
-        const account: PrivateKeyAccount = privateKeyToAccount(privateKey);
-
-        const client = createWalletClient({
-            account,
-            chain: holesky,
-            transport: http(),
-        });
-        return client;
+    try {
+      const balanceWei = await client.getBalance({
+        address,
+      })
+      const balanceEther = formatEther(balanceWei)
+      return balanceEther
+    } catch (error) {
+      console.error('Error fetching balance:', error)
+      throw error
     }
-
-    setCurrentWallet(seed: string): WalletClient<Transport, Chain, Account> {
-        SecureStore.setItemAsync("user_password", seed)
-            .catch(e => console.error(e));
-
-        return this.createWalletFromSeed(seed)
-    }
+  }
 }
 
-const walletService = new WalletService();
-export { walletService };
+const walletService = new WalletService()
+export { walletService }
