@@ -12,7 +12,7 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
     const colorScheme = useColorScheme()
-    const { address } = useContext(LoginContext)
+    const { address, logout } = useContext(LoginContext)
     const colors = Colors[colorScheme ?? 'light']
     const [copied, setCopied] = useState(false)
 
@@ -32,6 +32,10 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
         setShowOnboarding(true)
     }
 
+    const handleLogout = () => {
+        logout();
+    }
+
     return (
         <>
             <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -42,17 +46,22 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
                 </View>
                 <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
                     {address ? (
-                        <TouchableOpacity onPress={copyToClipboard}>
-                            {copied ? (
-                                <Text style={[styles.addressText, { color: colors.text }]}>
-                                    Copied!
-                                </Text>
-                            ) : (
-                                <Text style={[styles.addressText, { color: colors.text }]}>
-                                    {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
+                        <View style={styles.connectedContainer}>
+                            <TouchableOpacity onPress={copyToClipboard}>
+                                {copied ? (
+                                    <Text style={[styles.addressText, { color: colors.text }]}>
+                                        Copied!
+                                    </Text>
+                                ) : (
+                                    <Text style={[styles.addressText, { color: colors.text }]}>
+                                        {`${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.tint }]} onPress={handleLogout}>
+                                <Text style={styles.logoutButtonText}>Logout</Text>
+                            </TouchableOpacity>
+                        </View>
                     ) : (
                         <TouchableOpacity style={[styles.connectButton, { backgroundColor: colors.tint }]} onPress={handleConnect}>
                             <Text style={styles.connectButtonText}>Connect Wallet</Text>
@@ -96,5 +105,20 @@ const styles = StyleSheet.create({
     addressText: {
         fontSize: 16,
         fontWeight: '500',
+    },
+    connectedContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    logoutButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+    },
+    logoutButtonText: {
+        color: '#000',
+        fontSize: 14,
+        fontWeight: '600',
     },
 })
