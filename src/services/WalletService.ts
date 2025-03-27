@@ -66,6 +66,10 @@ class WalletService {
     return this.createWalletFromSeed(seed)
   }
 
+  unsetCurrentWallet(): void {
+    SecureStore.deleteItemAsync('user_password').catch((e) => console.error('Error during logout:', e))
+  }
+
   async getWalletBalance(address: `0x${string}`) {
     const client = createPublicClient({
       chain: holesky,

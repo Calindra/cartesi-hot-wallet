@@ -15,7 +15,7 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
   const colorScheme = useColorScheme()
-  const { address } = useContext(LoginContext)
+  const { address, logout } = useContext(LoginContext)
   const colors = Colors[colorScheme ?? 'light']
   const [copied, setCopied] = useState(false)
   const [showWalletData, setShowWalletData] = useState(false)
@@ -49,6 +49,10 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
     setShowOnboarding(true)
   }
 
+  const handleLogout = () => {
+    logout()
+  }
+
   return (
     <>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -80,6 +84,9 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
               <Feather name="copy" size={24} color="#666" />
             </TouchableOpacity>
             <Text style={[styles.balance]}>$ {balance}USD</Text>
+            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.tint }]} onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>Logout</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -143,5 +150,15 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     alignSelf: 'flex-start',
     margin: 8,
+  },
+  logoutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  logoutButtonText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '600',
   },
 })
