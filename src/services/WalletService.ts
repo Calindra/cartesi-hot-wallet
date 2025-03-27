@@ -63,6 +63,11 @@ class WalletService {
 
         return this.createWalletFromSeed(seed)
     }
+
+    unsetCurrentWallet(): void {
+        SecureStore.deleteItemAsync("user_password")
+            .catch(e => console.error("Error during logout:", e));
+    }
 }
 
 const walletService = new WalletService();
