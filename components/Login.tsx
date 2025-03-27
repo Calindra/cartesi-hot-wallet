@@ -219,6 +219,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
               <Text style={styles.signupText}>
                 The password you choose is the only attachment between you and your account
               </Text>
+              <Text style={styles.signupText}>There is no password recovery</Text>
             </View>
           </View>
         </View>

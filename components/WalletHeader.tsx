@@ -15,7 +15,7 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
   const colorScheme = useColorScheme()
-  const { address, logout, email } = useContext(LoginContext)
+  const { address, logout, email, setEmail } = useContext(LoginContext)
   const colors = Colors[colorScheme ?? 'light']
   const [copied, setCopied] = useState(false)
   const [showWalletData, setShowWalletData] = useState(false)
@@ -42,6 +42,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
   }
 
   const handleConnect = () => {
+    setEmail('')
     setShowLogin(true)
   }
 
@@ -65,7 +66,6 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
           )}
         </View>
         <View style={[styles.headerContent, { backgroundColor: colors.background }]}>
-          {/* TOOD: mudar para address */}
           {address ? (
             <TouchableOpacity
               onPress={() => {
