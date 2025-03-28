@@ -1,3 +1,4 @@
+import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
@@ -14,7 +15,6 @@ import {
   Pressable,
   StatusBar,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native'
@@ -304,14 +304,14 @@ export default function WebViewScreen() {
               style={styles.modalContent}
               onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
             >
-              <Text style={styles.modalTitle}>Confirm Transaction</Text>
-              <Text style={styles.modalMessage}>Are you sure you want to send this transaction?</Text>
+              <ThemedText style={styles.modalTitle}>Confirm Transaction</ThemedText>
+              <ThemedText style={styles.modalMessage}>Are you sure you want to send this transaction?</ThemedText>
               <View style={styles.buttonContainer}>
                 <Pressable style={[styles.button, styles.cancelButton]} onPress={cancelTransaction}>
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
                 </Pressable>
                 <Pressable style={[styles.button, styles.confirmButton]} onPress={handleTransaction}>
-                  <Text style={styles.confirmButtonText}>Confirm</Text>
+                  <ThemedText style={styles.confirmButtonText}>Confirm</ThemedText>
                 </Pressable>
               </View>
             </View>

@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons'
 import React from 'react'
-import { StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native'
+import { StyleSheet, TextStyle, View, ViewStyle } from 'react-native'
+import { ThemedText } from '../ThemedText'
 
 interface Styles {
   userIcon: ViewStyle
@@ -15,27 +16,31 @@ interface Styles {
 const HotWalletInfo: React.FC = () => {
   const BulletPoint = ({ title, text }: { title?: string; text: string }) => (
     <View style={styles.bulletPointContainer}>
-      {title ? <Text style={styles.bulletPointTitle}>{title}</Text> : <Text style={styles.bulletPointTitle}>•</Text>}
-      <Text style={styles.bulletPointText}>{text}</Text>
+      {title ? (
+        <ThemedText style={styles.bulletPointTitle}>{title}</ThemedText>
+      ) : (
+        <ThemedText style={styles.bulletPointTitle}>•</ThemedText>
+      )}
+      <ThemedText style={styles.bulletPointText}>{text}</ThemedText>
     </View>
   )
 
   return (
     <>
       <Feather name="book-open" size={32} color="#4a90e2" style={styles.userIcon as any} />
-      <Text style={styles.title}>What is a hot wallet?</Text>
-      <Text style={styles.subtitle}>
+      <ThemedText style={styles.title}>What is a hot wallet?</ThemedText>
+      <ThemedText style={styles.subtitle}>
         A "hot wallet" in crypto is a software wallet that stores your private keys online, connected to the internet,
         allowing for quick and easy access to your cryptocurrency for transactions and trading, but also making it more
         vulnerable to security breaches.{' '}
-      </Text>
-      <Text style={styles.subtitle}>
+      </ThemedText>
+      <ThemedText style={styles.subtitle}>
         When you leave your home do you carry all of your assets? The same logic can be applied to understand the usage
         of a Hot Wallet. The password you use to create the wallet is the only thing attaching you to the wallet. So, be
         councious and pick a really strong, unique password.
-      </Text>
+      </ThemedText>
 
-      <Text style={styles.sectionTitle}>Advantages:</Text>
+      <ThemedText style={styles.sectionTitle}>Advantages:</ThemedText>
       <BulletPoint
         title="Convenience"
         text="Easy access to your funds for trading, payments, and interacting with decentralized applications (dApps)."
@@ -46,7 +51,7 @@ const HotWalletInfo: React.FC = () => {
         text="Many hot wallets are integrated with cryptocurrency exchanges, making it easier to trade."
       />
 
-      <Text style={styles.sectionTitle}>Disadvantages:</Text>
+      <ThemedText style={styles.sectionTitle}>Disadvantages:</ThemedText>
       <BulletPoint
         title="Security Vulnerability"
         text="The constant internet connection makes them a target for hackers and malware."
@@ -60,7 +65,7 @@ const HotWalletInfo: React.FC = () => {
         text="Because of the security risks, hot wallets are not recommended for storing large amounts of cryptocurrency long-term."
       />
 
-      <Text style={styles.sectionTitle}>Security Best Practices for Hot Wallets:</Text>
+      <ThemedText style={styles.sectionTitle}>Security Best Practices for Hot Wallets:</ThemedText>
       <BulletPoint title="Strong Passwords" text="Use STRONG and UNIQUE passwords for your hot wallet." />
       <BulletPoint
         title="Regularly Update Software"

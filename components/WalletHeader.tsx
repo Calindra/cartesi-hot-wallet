@@ -6,7 +6,9 @@ import { walletService } from '@/src/services/WalletService'
 import { Feather } from '@expo/vector-icons'
 import * as Clipboard from 'expo-clipboard'
 import React, { useContext, useEffect, useState } from 'react'
-import { Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ThemedText } from './ThemedText'
+import { ThemedTouchableOpacity } from './ThemedTouchableOpacity'
 
 interface WalletHeaderProps {
   setShowLogin: (value: boolean) => void
@@ -15,8 +17,8 @@ interface WalletHeaderProps {
 
 export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
   const colorScheme = useColorScheme()
-  const { address, logout, email, setEmail } = useContext(LoginContext)
   const colors = Colors[colorScheme ?? 'light']
+  const { address, logout, email, setEmail } = useContext(LoginContext)
   const [copied, setCopied] = useState(false)
   const [showWalletData, setShowWalletData] = useState(false)
   const [balance, setBalance] = useState('')
@@ -61,7 +63,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
         <View>
           {!address && (
             <TouchableOpacity style={[styles.connectButton]} onPress={handleOnboarding}>
-              <Text> What is a hot wallet?</Text>
+              <ThemedText> What is a hot wallet?</ThemedText>
             </TouchableOpacity>
           )}
         </View>
@@ -72,23 +74,23 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
                 setShowWalletData(!showWalletData)
               }}
             >
-              <Text style={[styles.addressText, { color: colors.text }]}>{emailShortner(email)}</Text>
+              <ThemedText style={[styles.addressText, { color: colors.text }]}>{emailShortner(email)}</ThemedText>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={[styles.connectButton, { backgroundColor: colors.tint }]} onPress={handleConnect}>
-              <Text style={styles.connectButtonText}>Connect Wallet</Text>
-            </TouchableOpacity>
+            <ThemedTouchableOpacity onPress={handleConnect} buttonText="Connect Wallet" type="button" />
           )}
         </View>
         {showWalletData && (
           <View style={[styles.showWalletDataContainer]}>
             <TouchableOpacity style={[styles.walletToClipboard]} onPress={copyToClipboard}>
-              <Text style={[styles.addressText, { color: colors.text }]}>{walletAddressShortner(address)}</Text>
+              <ThemedText style={[styles.addressText, { color: colors.text }]}>
+                {walletAddressShortner(address)}
+              </ThemedText>
               <Feather name="copy" size={24} color="#666" />
             </TouchableOpacity>
-            <Text style={[styles.balance]}>$ {balance}USD</Text>
+            <ThemedText style={[styles.balance]}>$ {balance}USD</ThemedText>
             <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.tint }]} onPress={handleLogout}>
-              <Text style={styles.logoutButtonText}>Logout</Text>
+              <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
             </TouchableOpacity>
           </View>
         )}
@@ -122,7 +124,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   connectButtonText: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

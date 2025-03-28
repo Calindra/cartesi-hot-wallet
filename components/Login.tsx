@@ -7,7 +7,6 @@ import {
   Modal,
   Platform,
   StyleSheet,
-  Text,
   TextInput,
   TextStyle,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import {
   ViewStyle,
 } from 'react-native'
 import zxcvbn from 'zxcvbn'
+import { ThemedText } from './ThemedText'
 
 export interface LoginCredentials {
   email: string
@@ -154,8 +154,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
           <View style={styles.card}>
             <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
-            <Text style={styles.title}>Welcome</Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+            <ThemedText style={styles.title}>Welcome</ThemedText>
+            <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>
@@ -192,13 +192,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
             </View>
 
             {/* <TouchableOpacity style={styles.forgotPasswordButton}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <ThemedText style={styles.forgotPasswordText}>Forgot Password?</ThemedText>
             </TouchableOpacity> */}
 
             {error ? (
               <View style={styles.errorContainer}>
                 <Feather name="alert-circle" size={16} color="#ff4d4d" />
-                <Text style={styles.error}>{error}</Text>
+                <ThemedText style={styles.error}>{error}</ThemedText>
               </View>
             ) : null}
 
@@ -208,18 +208,18 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 onPress={handleLogin}
                 disabled={isLoading}
               >
-                <Text style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
+                <ThemedText style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</ThemedText>
               </TouchableOpacity>
             </Animated.View>
 
             <View style={styles.signupContainer}>
-              <Text style={styles.signupText}>
+              <ThemedText style={styles.signupText}>
                 Don't have an account? Remember, use a strong UNIQUE password to create one.
-              </Text>
-              <Text style={styles.signupText}>
+              </ThemedText>
+              <ThemedText style={styles.signupText}>
                 The password you choose is the only attachment between you and your account
-              </Text>
-              <Text style={styles.signupText}>There is no password recovery</Text>
+              </ThemedText>
+              <ThemedText style={styles.signupText}>There is no password recovery</ThemedText>
             </View>
           </View>
         </View>

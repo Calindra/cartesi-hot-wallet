@@ -1,44 +1,44 @@
-import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  StyleSheet, 
+import { ThemedText } from '@/components/ThemedText'
+import { Feather } from '@expo/vector-icons'
+import React, { useState } from 'react'
+import {
+  Alert,
   Animated,
-  Modal,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  TouchableWithoutFeedback
-} from "react-native";
-import { Feather } from '@expo/vector-icons';
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native'
 
 const CreateAccount = ({ isVisible, onClose, onSave }) => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const buttonScale = new Animated.Value(1);
+  const buttonScale = new Animated.Value(1)
 
   const validatePassword = (pass) => {
-    const hasMinLength = pass.length >= 6;
-    const hasNumber = /\d/.test(pass);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
-    return { hasMinLength, hasNumber, hasSpecial };
-  };
+    const hasMinLength = pass.length >= 6
+    const hasNumber = /\d/.test(pass)
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass)
+    return { hasMinLength, hasNumber, hasSpecial }
+  }
 
   const getPasswordStrength = () => {
-    const validation = validatePassword(password);
-    const score = Object.values(validation).filter(Boolean).length;
-    if (score === 0) return { color: "#ff4d4d", text: "Weak" };
-    if (score === 1) return { color: "#ffd700", text: "Fair" };
-    if (score === 2) return { color: "#2ecc71", text: "Good" };
-    return { color: "#27ae60", text: "Strong" };
-  };
+    const validation = validatePassword(password)
+    const score = Object.values(validation).filter(Boolean).length
+    if (score === 0) return { color: '#ff4d4d', text: 'Weak' }
+    if (score === 1) return { color: '#ffd700', text: 'Fair' }
+    if (score === 2) return { color: '#2ecc71', text: 'Good' }
+    return { color: '#27ae60', text: 'Strong' }
+  }
 
   const handleButtonPress = () => {
     Animated.sequence([
@@ -52,57 +52,49 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
         duration: 100,
         useNativeDriver: true,
       }),
-    ]).start();
-  };
+    ]).start()
+  }
 
   const handleClose = () => {
-    setPassword("");
-    setConfirmPassword("");
-    setError("");
-    onClose();
-  };
+    setPassword('')
+    setConfirmPassword('')
+    setError('')
+    onClose()
+  }
 
   async function savePassword() {
-    handleButtonPress();
-    
+    handleButtonPress()
+
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      return;
+      setError('Password must be at least 6 characters long')
+      return
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+      setError('Passwords do not match')
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       // Simulated delay for demo purposes
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       if (onSave) {
-        await onSave(password);
+        await onSave(password)
       }
-      Alert.alert("Success", "Password saved securely!");
-      handleClose();
+      Alert.alert('Success', 'Password saved securely!')
+      handleClose()
     } catch (e) {
-      Alert.alert("Error", "Failed to save password");
+      Alert.alert('Error', 'Failed to save password')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
-  const strength = getPasswordStrength();
+  const strength = getPasswordStrength()
 
   return (
-    <Modal
-      visible={isVisible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalContainer}
-      >
+    <Modal visible={isVisible} transparent animationType="slide" onRequestClose={handleClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
@@ -116,8 +108,8 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
 
           <View style={styles.card}>
             <Feather name="lock" size={32} color="#4a90e2" style={styles.lockIcon} />
-            <Text style={styles.title}>Create Password</Text>
-            <Text style={styles.subtitle}>Choose a strong password to secure your account</Text>
+            <ThemedText style={styles.title}>Create Password</ThemedText>
+            <ThemedText style={styles.subtitle}>Choose a strong password to secure your account</ThemedText>
 
             <View style={styles.inputContainer}>
               <TextInput
@@ -128,24 +120,15 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
                 onChangeText={setPassword}
                 placeholderTextColor="#999"
               />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Feather 
-                  name={showPassword ? "eye-off" : "eye"} 
-                  size={20} 
-                  color="#666" 
-                />
+              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
               </TouchableOpacity>
             </View>
 
             {password && (
               <View style={styles.strengthContainer}>
                 <View style={[styles.strengthBar, { backgroundColor: strength.color }]} />
-                <Text style={[styles.strengthText, { color: strength.color }]}>
-                  {strength.text}
-                </Text>
+                <ThemedText style={[styles.strengthText, { color: strength.color }]}>{strength.text}</ThemedText>
               </View>
             )}
 
@@ -158,50 +141,35 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
                 onChangeText={setConfirmPassword}
                 placeholderTextColor="#999"
               />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Feather 
-                  name={showConfirmPassword ? "eye-off" : "eye"} 
-                  size={20} 
-                  color="#666" 
-                />
+              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
               </TouchableOpacity>
             </View>
 
             {error ? (
               <View style={styles.errorContainer}>
                 <Feather name="x-circle" size={16} color="#ff4d4d" />
-                <Text style={styles.error}>{error}</Text>
+                <ThemedText style={styles.error}>{error}</ThemedText>
               </View>
             ) : null}
 
             <View style={styles.requirementsList}>
-              <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+              <ThemedText style={styles.requirementsTitle}>Password Requirements:</ThemedText>
               <View style={styles.requirementItem}>
-                <Feather 
-                  name="check-circle" 
-                  size={16} 
-                  color={password.length >= 6 ? "#2ecc71" : "#ccc"} 
-                />
-                <Text style={styles.requirementText}>At least 6 characters</Text>
+                <Feather name="check-circle" size={16} color={password.length >= 6 ? '#2ecc71' : '#ccc'} />
+                <ThemedText style={styles.requirementText}>At least 6 characters</ThemedText>
               </View>
               <View style={styles.requirementItem}>
-                <Feather 
-                  name="check-circle" 
-                  size={16} 
-                  color={/\d/.test(password) ? "#2ecc71" : "#ccc"} 
-                />
-                <Text style={styles.requirementText}>Contains a number</Text>
+                <Feather name="check-circle" size={16} color={/\d/.test(password) ? '#2ecc71' : '#ccc'} />
+                <ThemedText style={styles.requirementText}>Contains a number</ThemedText>
               </View>
               <View style={styles.requirementItem}>
-                <Feather 
-                  name="check-circle" 
-                  size={16} 
-                  color={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? "#2ecc71" : "#ccc"} 
+                <Feather
+                  name="check-circle"
+                  size={16}
+                  color={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '#2ecc71' : '#ccc'}
                 />
-                <Text style={styles.requirementText}>Contains a special character</Text>
+                <ThemedText style={styles.requirementText}>Contains a special character</ThemedText>
               </View>
             </View>
 
@@ -211,29 +179,27 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
                 onPress={savePassword}
                 disabled={isLoading}
               >
-                <Text style={styles.buttonText}>
-                  {isLoading ? "Saving..." : "Save Password"}
-                </Text>
+                <ThemedText style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save Password'}</ThemedText>
               </TouchableOpacity>
             </Animated.View>
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: "flex-end", // This makes the modal slide up from the bottom
+    justifyContent: 'flex-end', // This makes the modal slide up from the bottom
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: "#f5f6fa",
+    backgroundColor: '#f5f6fa',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
@@ -247,45 +213,45 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingTop: 8,
   },
   lockIcon: {
-    alignSelf: "center",
+    alignSelf: 'center',
     marginBottom: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#1a1a1a",
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 24,
   },
   inputContainer: {
-    position: "relative",
+    position: 'relative',
     marginBottom: 16,
   },
   input: {
     height: 56,
     borderWidth: 1.5,
-    borderColor: "#e1e1e1",
+    borderColor: '#e1e1e1',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: "#1a1a1a",
-    backgroundColor: "#fff",
+    color: '#1a1a1a',
+    backgroundColor: '#fff',
   },
   eyeIcon: {
-    position: "absolute",
+    position: 'absolute',
     right: 16,
     top: 18,
   },
@@ -299,18 +265,18 @@ const styles = StyleSheet.create({
   },
   strengthText: {
     fontSize: 12,
-    textAlign: "right",
+    textAlign: 'right',
   },
   errorContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
     padding: 12,
-    backgroundColor: "#fff5f5",
+    backgroundColor: '#fff5f5',
     borderRadius: 8,
   },
   error: {
-    color: "#ff4d4d",
+    color: '#ff4d4d',
     marginLeft: 8,
     fontSize: 14,
   },
@@ -319,35 +285,35 @@ const styles = StyleSheet.create({
   },
   requirementsTitle: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
+    fontWeight: '600',
+    color: '#666',
     marginBottom: 12,
   },
   requirementItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
   requirementText: {
     marginLeft: 8,
-    color: "#666",
+    color: '#666',
     fontSize: 14,
   },
   button: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: '#4a90e2',
     height: 56,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonDisabled: {
-    backgroundColor: "#a0c5e8",
+    backgroundColor: '#a0c5e8',
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-});
+})
 
-export default CreateAccount;
+export default CreateAccount

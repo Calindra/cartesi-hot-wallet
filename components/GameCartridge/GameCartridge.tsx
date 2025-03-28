@@ -1,5 +1,6 @@
 import React from 'react'
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, View } from 'react-native'
+import { ThemedText } from '../ThemedText'
 
 interface GameCardProps {
   imageUrl: string
@@ -26,12 +27,12 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
           )}
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+          <ThemedText style={styles.title} numberOfLines={1} ellipsizeMode="tail">
             {title}
-          </Text>
-          <Text style={styles.author} numberOfLines={1} ellipsizeMode="tail">
+          </ThemedText>
+          <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
             {author}
-          </Text>
+          </ThemedText>
         </View>
       </View>
     </View>
