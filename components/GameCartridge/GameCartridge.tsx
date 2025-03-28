@@ -31,7 +31,7 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
             {title}
           </ThemedText>
           <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
-            {author}
+            By {author}
           </ThemedText>
         </View>
       </View>
@@ -42,7 +42,7 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
 const styles = StyleSheet.create({
   cartridgeContainer: {
     width: 150,
-    height: 230,
+    height: 220,
     display: 'flex',
   },
   backgroundContainer: {

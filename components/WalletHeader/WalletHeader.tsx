@@ -172,7 +172,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 700,
     alignSelf: 'flex-start',
-    margin: 8,
+    marginVertical: 16,
+    marginLeft: 8,
   },
   transactionsContainer: {
     flexDirection: 'row',

@@ -159,19 +159,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
             <View style={styles.inputContainer}>
               <View style={styles.inputIconContainer}>
-                <Feather name="lock" size={20} color="#666" />
+                <Feather name="mail" size={20} color="#666" />
               </View>
               <TextInput
                 style={styles.input}
                 placeholder="Email"
-                secureTextEntry={!showEmail}
                 value={email}
                 onChangeText={setEmail}
                 placeholderTextColor="#999"
               />
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowEmail(!showEmail)}>
-                <Feather name={showEmail ? 'eye-off' : 'eye'} size={20} color="#666" />
-              </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
@@ -190,10 +186,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
               </TouchableOpacity>
             </View>
-
-            {/* <TouchableOpacity style={styles.forgotPasswordButton}>
-              <ThemedText style={styles.forgotPasswordText}>Forgot Password?</ThemedText>
-            </TouchableOpacity> */}
 
             {error ? (
               <View style={styles.errorContainer}>
