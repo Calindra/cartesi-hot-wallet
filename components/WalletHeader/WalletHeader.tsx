@@ -16,9 +16,10 @@ import WalletHeaderBottomNavigation from './WalletHeaderBottomNavigation'
 interface WalletHeaderProps {
   setShowLogin: (value: boolean) => void
   setShowOnboarding: (value: boolean) => void
+  setShowSettings: (value: boolean) => void
 }
 
-export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding }) => {
+export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setShowOnboarding, setShowSettings }) => {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const { address, logout, email, setEmail } = useContext(LoginContext)

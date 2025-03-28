@@ -7,6 +7,7 @@ import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'
 import ParallaxScrollView, { ParallaxScrollViewProps } from './ParallaxScrollView'
 import { WalletHeader } from './WalletHeader/WalletHeader'
+import SettingsModal from './SettingsModal'
 
 interface ParallaxScrollViewWithWalletProps extends ParallaxScrollViewProps {
   showWallet?: boolean
@@ -21,6 +22,7 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
   const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const { setAddress } = useContext(LoginContext)
   const headerHeight = Platform.OS === 'ios' ? 107 : (StatusBar.currentHeight || 0) + 60
   const onSave = () => {}
@@ -54,9 +56,15 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             setShowOnboarding(false)
           }}
         />
+        <SettingsModal 
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+          initialSettings={{ right: 3, left: -3, up: -41, down: -51 }}
+          onSettingsChange={(settings) => console.log(settings)}
+        />
         <CreateAccount isVisible={showCreateAccount} onClose={() => setShowCreateAccount(false)} onSave={onSave} />
       </ParallaxScrollView>
-      {showWallet && <WalletHeader setShowLogin={setShowLogin} setShowOnboarding={setShowOnboarding} />}
+      {showWallet && <WalletHeader setShowLogin={setShowLogin} setShowOnboarding={setShowOnboarding} setShowSettings={setShowSettings} />}
     </View>
   )
 }
