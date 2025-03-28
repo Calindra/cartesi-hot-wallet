@@ -7,6 +7,7 @@ import {
   createPublicClient,
   createWalletClient,
   formatEther,
+  GetLogsReturnType,
   hexToBytes,
   http,
   keccak256,
@@ -19,6 +20,20 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { holesky } from 'viem/chains'
 
 class WalletService {
+  private _currentChain: Chain
+
+  constructor(chain: Chain = holesky) {
+    this._currentChain = chain
+  }
+
+  get currentChain(): Chain {
+    return this._currentChain
+  }
+
+  setChain(chain: Chain): void {
+    this._currentChain = chain
+  }
+
   getCurrentWallet() {
     const seed = SecureStore.getItem('user_password')
     if (!seed) {
@@ -54,7 +69,7 @@ class WalletService {
 
     const client = createWalletClient({
       account,
-      chain: holesky,
+      chain: this._currentChain,
       transport: http(),
     })
     return client
@@ -72,7 +87,7 @@ class WalletService {
 
   async getWalletBalance(address: `0x${string}`) {
     const client = createPublicClient({
-      chain: holesky,
+      chain: this._currentChain,
       transport: http(),
     })
 
@@ -84,6 +99,24 @@ class WalletService {
       return balanceEther
     } catch (error) {
       console.error('Error fetching balance:', error)
+      throw error
+    }
+  }
+
+  async getAccountLogs(address: `0x${string}`): Promise<GetLogsReturnType> {
+    const client = createPublicClient({
+      chain: this._currentChain,
+      transport: http(),
+    })
+
+    try {
+      // TODO: https://viem.sh/docs/actions/public/getLogs.html#scoping
+      const logs = await client.getLogs({
+        address,
+      })
+      return logs
+    } catch (error) {
+      console.error('Error getting accoung logs:', error)
       throw error
     }
   }

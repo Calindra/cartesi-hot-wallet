@@ -12,14 +12,11 @@ export function useThemeColor(
 ) {
   const theme = useColorScheme() ?? 'light'
 
-  console.log('>>>>>>>>>>>>>> THEME', theme)
   const colorFromProps = props[theme]
 
   if (colorFromProps) {
-    console.log('[1]', colorFromProps)
     return colorFromProps
   } else {
-    console.log('[2]', Colors[theme][colorName])
     return Colors[theme][colorName]
   }
 }

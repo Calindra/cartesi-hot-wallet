@@ -6,7 +6,7 @@ import CreateAccount from './CreateAccount'
 import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'
 import ParallaxScrollView, { ParallaxScrollViewProps } from './ParallaxScrollView'
-import { WalletHeader } from './WalletHeader'
+import { WalletHeader } from './WalletHeader/WalletHeader'
 
 interface ParallaxScrollViewWithWalletProps extends ParallaxScrollViewProps {
   showWallet?: boolean

@@ -7,8 +7,11 @@ import { Feather } from '@expo/vector-icons'
 import * as Clipboard from 'expo-clipboard'
 import React, { useContext, useEffect, useState } from 'react'
 import { Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native'
-import { ThemedText } from './ThemedText'
-import { ThemedTouchableOpacity } from './ThemedTouchableOpacity'
+import { GetLogsReturnType, Log } from 'viem'
+import { ThemedButton } from '../ThemedButton'
+import { ThemedText } from '../ThemedText'
+import { ThemedView } from '../ThemedView'
+import WalletHeaderBottomNavigation from './WalletHeaderBottomNavigation'
 
 interface WalletHeaderProps {
   setShowLogin: (value: boolean) => void
@@ -22,12 +25,14 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
   const [copied, setCopied] = useState(false)
   const [showWalletData, setShowWalletData] = useState(false)
   const [balance, setBalance] = useState('')
+  const [logs, setLogs] = useState<GetLogsReturnType>()
 
   useEffect(() => {
     if (!address) {
       return
     }
     getWalletBalance(address as `0x${string}`)
+    getWalletLogs(address as `0x${string}`)
   }, [address])
 
   const copyToClipboard = async () => {
@@ -41,6 +46,11 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
   const getWalletBalance = async (address: `0x${string}`) => {
     const balance = await walletService.getWalletBalance(address)
     setBalance(balance)
+  }
+
+  const getWalletLogs = async (address: `0x${string}`) => {
+    const logs = await walletService.getAccountLogs(address)
+    setLogs(logs)
   }
 
   const handleConnect = () => {
@@ -77,22 +87,31 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
               <ThemedText style={[styles.addressText, { color: colors.text }]}>{emailShortner(email)}</ThemedText>
             </TouchableOpacity>
           ) : (
-            <ThemedTouchableOpacity onPress={handleConnect} buttonText="Connect Wallet" type="button" />
+            <ThemedButton onPress={handleConnect} buttonText="Connect Wallet"></ThemedButton>
           )}
         </View>
         {showWalletData && (
-          <View style={[styles.showWalletDataContainer]}>
+          <ThemedView style={[styles.showWalletDataContainer]}>
             <TouchableOpacity style={[styles.walletToClipboard]} onPress={copyToClipboard}>
               <ThemedText style={[styles.addressText, { color: colors.text }]}>
                 {walletAddressShortner(address)}
               </ThemedText>
               <Feather name="copy" size={24} color="#666" />
             </TouchableOpacity>
-            <ThemedText style={[styles.balance]}>$ {balance}USD</ThemedText>
-            <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.tint }]} onPress={handleLogout}>
-              <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
-            </TouchableOpacity>
-          </View>
+
+            <ThemedText type="title" style={[styles.balance]}>
+              $ {balance}Holesky ETH
+            </ThemedText>
+
+            <View style={[styles.transactionsContainer]}>
+              {logs?.map((log: Log) => (
+                <View key={`${log.blockHash}-${log.logIndex}`}>{JSON.stringify(log)}</View>
+              ))}
+            </View>
+
+            <WalletHeaderBottomNavigation />
+            <ThemedButton buttonText="Logout" onPress={handleLogout} />
+          </ThemedView>
         )}
       </View>
     </>
@@ -138,7 +157,7 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 47 : StatusBar.currentHeight,
     width: '100%',
     minHeight: 300,
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -155,14 +174,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     margin: 8,
   },
-  logoutButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  logoutButtonText: {
-    color: '#000',
-    fontSize: 14,
-    fontWeight: '600',
+  transactionsContainer: {
+    flexDirection: 'row',
   },
 })

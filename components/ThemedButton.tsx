@@ -1,33 +1,40 @@
 import { useThemeColor } from '@/hooks/useThemeColor'
+import { Feather } from '@expo/vector-icons' // Assuming Feather icons, adjust if needed
 import React from 'react'
 import { StyleProp, TouchableOpacity, TouchableOpacityProps, ViewStyle } from 'react-native'
 import { ThemedText } from './ThemedText' // Adjust import path as needed
 
-export type ThemedTouchableOpacityProps = TouchableOpacityProps & {
+export type ThemedButtonProps = TouchableOpacityProps & {
   lightColor?: string
   darkColor?: string
   type?: 'default' | 'button' | 'row'
   buttonText?: string
+  iconName?: keyof typeof Feather.glyphMap // Type for Feather icon names
 }
 
-export function ThemedTouchableOpacity({
+export function ThemedButton({
   style,
   lightColor,
   darkColor,
-  type = 'default',
+  type = 'button',
   buttonText,
+  iconName,
   children,
   ...rest
-}: ThemedTouchableOpacityProps) {
+}: ThemedButtonProps) {
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'tint')
 
   const baseStyles: StyleProp<ViewStyle> =
     type === 'button'
       ? {
-          paddingHorizontal: 8,
+          paddingHorizontal: 13,
           paddingVertical: 5,
           borderRadius: 21,
           backgroundColor,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
         }
       : type === 'row'
       ? {
@@ -54,18 +61,23 @@ export function ThemedTouchableOpacity({
     return luminance > 0.5 ? '#000000' : '#FFFFFF'
   }
 
+  const textColor = getTextColor()
+
   return (
     <TouchableOpacity style={[baseStyles, type === 'default' ? { backgroundColor } : null, style]} {...rest}>
       {buttonText ? (
-        <ThemedText
-          style={{
-            color: getTextColor(),
-            fontWeight: '600',
-            fontSize: 16,
-          }}
-        >
-          {buttonText}
-        </ThemedText>
+        <>
+          <ThemedText
+            style={{
+              color: textColor,
+              fontWeight: '600',
+              fontSize: 16,
+            }}
+          >
+            {buttonText}
+          </ThemedText>
+          {iconName && <Feather name={iconName} size={18} color={textColor} />}
+        </>
       ) : (
         children
       )}
