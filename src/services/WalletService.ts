@@ -17,12 +17,12 @@ import {
   WalletClient,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { holesky } from 'viem/chains'
+import { baseSepolia } from 'viem/chains'
 
 class WalletService {
   private _currentChain: Chain
 
-  constructor(chain: Chain = holesky) {
+  constructor(chain: Chain = baseSepolia) {
     this._currentChain = chain
   }
 

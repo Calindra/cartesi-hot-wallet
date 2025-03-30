@@ -175,22 +175,28 @@ export default function FullScreen() {
     const client = walletService.getCurrentWallet()
     if (!client) {
       // TODO: open the login screen
+      console.log('TODO: open the login screen.')
       return
     }
-    const txHash = await client.sendTransaction(currentTransaction.params)
-    console.log('Transaction Hash:', txHash)
-    const result = txHash
-    console.log('result', result)
-    const response = {
-      reqId: currentTransaction.request.reqId,
-      result,
-    }
-    const eventScript = `
+    try {
+      console.log('Sending transaction...')
+      const txHash = await client.sendTransaction(currentTransaction.params)
+      console.log('Transaction Hash:', txHash)
+      const result = txHash
+      console.log('result', result)
+      const response = {
+        reqId: currentTransaction.request.reqId,
+        result,
+      }
+      const eventScript = `
       window.ethereum.responseReceiver(${JSON.stringify(response)});
       true; // To ensure execution is finished
     `
-    if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(eventScript)
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(eventScript)
+      }
+    } catch (e) {
+      console.error(`Error sending transaction`, e)
     }
   }
 
@@ -294,7 +300,8 @@ export default function FullScreen() {
               // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
-              uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
+              // uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
+              uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
