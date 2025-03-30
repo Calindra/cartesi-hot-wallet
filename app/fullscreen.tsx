@@ -189,14 +189,31 @@ export default function FullScreen() {
         result,
       }
       const eventScript = `
-      window.ethereum.responseReceiver(${JSON.stringify(response)});
-      true; // To ensure execution is finished
-    `
+        window.ethereum.responseReceiver(${JSON.stringify(response)});
+        true; // To ensure execution is finished
+      `
       if (webViewRef.current) {
         webViewRef.current.injectJavaScript(eventScript)
       }
     } catch (e) {
-      console.error(`Error sending transaction`, e)
+      console.error(`Error sending transaction`, e);
+      if (e instanceof Error) {
+        const response = {
+          reqId: currentTransaction.request.reqId,
+          result: {
+            error: {
+              message: e.message,
+            }
+          },
+        };
+        const eventScript = `
+          window.ethereum.responseReceiver(${JSON.stringify(response)});
+          true; // To ensure execution is finished
+        `
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(eventScript)
+        }
+      }
     }
   }
 
