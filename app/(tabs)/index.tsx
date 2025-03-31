@@ -1,20 +1,12 @@
 import CustomGrid from '@/components/CustomGrid/CustomGrid'
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet'
 import { IconSymbol } from '@/components/ui/IconSymbol'
+import { GameData } from '@/src/model/GameData'
 import { usePathname } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useEffect, useState } from 'react'
 import { Dimensions, ScrollView, StyleSheet } from 'react-native'
 
-// Define the type for game data
-interface GameData {
-  id: string
-  title: string
-  author: string
-  imageUrl: string
-  gameURL: string
-  webview: boolean
-}
 
 // TODO: could come from an API
 const gameData: GameData[] = [
@@ -33,6 +25,7 @@ const gameData: GameData[] = [
     imageUrl: 'https://rives.io/img/carts/freedoom.png',
     gameURL: 'https://mainnet-v5.rives.io/data/cartridges/721f735bbca3',
     webview: false,
+    webviewURI: 'https://af4d-179-218-4-170.ngrok-free.app/doom',
   },
   {
     id: '3',

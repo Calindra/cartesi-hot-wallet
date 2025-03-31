@@ -101,7 +101,7 @@ const injectedJS = `
 const currentTransaction: any = {}
 
 export default function FullScreen() {
-  const { gameURL } = useLocalSearchParams()
+  const { gameURL, webviewURI } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -318,7 +318,8 @@ export default function FullScreen() {
               // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
               // uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
-              uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
+              // uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
+              uri: (webviewURI as string) || 'https://af4d-179-218-4-170.ngrok-free.app/landscape-fullscreen',
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
