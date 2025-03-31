@@ -101,7 +101,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
             </TouchableOpacity>
 
             <ThemedText type="title" style={[styles.balance]}>
-              $ {balance}Holesky ETH
+              $ {balance} Base Sepolia ETH
             </ThemedText>
 
             <View style={[styles.transactionsContainer]}>
