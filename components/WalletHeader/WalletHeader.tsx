@@ -90,6 +90,12 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
           ) : (
             <ThemedButton onPress={handleConnect} buttonText="Connect Wallet"></ThemedButton>
           )}
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => setShowSettings(true)}
+          >
+            <Feather name="settings" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
         {showWalletData && (
           <ThemedView style={[styles.showWalletDataContainer]}>
@@ -178,5 +184,8 @@ const styles = StyleSheet.create({
   },
   transactionsContainer: {
     flexDirection: 'row',
+  },
+  settingsButton: {
+    marginLeft: 16,
   },
 })

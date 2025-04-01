@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
+import * as SecureStore from 'expo-secure-store';
 
 interface Settings {
   right: number;
@@ -18,27 +19,36 @@ interface Settings {
 interface SettingsModalProps {
   visible: boolean;
   onClose: () => void;
-  initialSettings: Settings;
   onSettingsChange: (settings: Settings) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
   visible, 
   onClose, 
-  initialSettings, 
   onSettingsChange 
 }) => {
   const [settings, setSettings] = useState<Settings>({
-    right: initialSettings.right || 3,
-    left: initialSettings.left || -3,
-    up: initialSettings.up || -41,
-    down: initialSettings.down || -51
+    right: 3,
+    left: -3,
+    up: -41,
+    down: -51
   });
 
-  const handleSliderChange = (key: keyof Settings, value: number) => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      const storedSettings = await SecureStore.getItemAsync('deviceOrientationSettings');
+      if (storedSettings) {
+        setSettings(JSON.parse(storedSettings));
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const handleSliderChange = async (key: keyof Settings, value: number) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     onSettingsChange(newSettings);
+    await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
   };
 
   const renderSlider = (key: keyof Settings, label: string) => (
