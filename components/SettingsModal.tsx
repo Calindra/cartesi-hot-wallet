@@ -80,6 +80,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Settings</Text>
+          <Text style={styles.modalSubtitle}>Controller Sensitivity</Text>
           
           {renderSlider('right', 'Right')}
           {renderSlider('left', 'Left')}
@@ -124,6 +125,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    marginBottom: 10 // Adjusted margin
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#CCCCCC',
     marginBottom: 20
   },
   sliderContainer: {
