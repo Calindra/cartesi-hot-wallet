@@ -23,6 +23,8 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 
+const DEFAULT_GAME_PAGE="https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/landscape-fullscreen.html"
+
 //TODO:
 const { height, width } = Dimensions.get('window')
 const paddingBottom = 30
@@ -311,20 +313,7 @@ export default function FullScreen() {
           <WebView
             ref={webViewRef}
             source={{
-              // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-              // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
-              // uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
-              uri: (webviewURI as string) || 'https://af4d-179-218-4-170.ngrok-free.app/landscape-fullscreen',
-              // uri: 'https://ipfs.io/ipfs/bafybeict7gtwvyrvwqxa5cc5rxovbh67vzfiwx3d56z6qs74jvbxfumgiu/landscape-fullscreen.html',
+              uri: (webviewURI as string) || DEFAULT_GAME_PAGE,
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
