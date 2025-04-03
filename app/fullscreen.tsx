@@ -243,6 +243,10 @@ export default function FullScreen() {
       return
     }
     const message = event.nativeEvent.data // Get message from WebView
+    if (message === 'openSettings') {
+      console.log('Open Settings')
+      return
+    }
     // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
       const request = JSON.parse(message)
@@ -320,6 +324,7 @@ export default function FullScreen() {
               // uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
               // uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
               uri: (webviewURI as string) || 'https://af4d-179-218-4-170.ngrok-free.app/landscape-fullscreen',
+              // uri: 'https://ipfs.io/ipfs/bafybeict7gtwvyrvwqxa5cc5rxovbh67vzfiwx3d56z6qs74jvbxfumgiu/landscape-fullscreen.html',
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
@@ -380,6 +385,7 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   loader: {
     position: 'absolute',

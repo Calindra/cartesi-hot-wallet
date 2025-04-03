@@ -25,7 +25,9 @@ const gameData: GameData[] = [
     imageUrl: 'https://rives.io/img/carts/freedoom.png',
     gameURL: 'https://mainnet-v5.rives.io/data/cartridges/721f735bbca3',
     webview: false,
-    webviewURI: 'https://af4d-179-218-4-170.ngrok-free.app/doom',
+    // webviewURI: 'https://0f82-200-152-100-218.ngrok-free.app/landscape-fullscreen',
+    // webviewURI: 'https://0f82-200-152-100-218.ngrok-free.app/doom-smooth-turn',
+    webviewURI: 'https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/doom.html',
   },
   {
     id: '3',
