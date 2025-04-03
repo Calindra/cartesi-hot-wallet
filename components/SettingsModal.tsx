@@ -4,6 +4,7 @@ import {
   Text, 
   Modal, 
   StyleSheet, 
+  ScrollView
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as SecureStore from 'expo-secure-store';
@@ -72,7 +73,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+        <ScrollView 
+          style={styles.modalContent} 
+          contentContainerStyle={{ alignItems: 'center' }}
+        >
           <Text style={styles.modalTitle}>Settings</Text>
           <Text style={styles.modalSubtitle}>Controller Sensitivity</Text>
           
@@ -87,7 +91,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             onPress={onClose} 
             style={styles.closeButton} 
           />
-        </View>
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -105,7 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e1e1e',
     borderRadius: 10,
     padding: 20,
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -113,13 +116,13 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 10 // Adjusted margin
+    marginBottom: 10
   },
   modalSubtitle: {
     fontSize: 16,

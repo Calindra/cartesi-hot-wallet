@@ -59,7 +59,6 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
         <SettingsModal 
           visible={showSettings}
           onClose={() => setShowSettings(false)}
-          initialSettings={{ right: 3, left: -3, up: -41, down: -51 }}
           onSettingsChange={(settings) => console.log(settings)}
         />
         <CreateAccount isVisible={showCreateAccount} onClose={() => setShowCreateAccount(false)} onSave={onSave} />
