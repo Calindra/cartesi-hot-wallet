@@ -14,10 +14,11 @@ export const LoginProvider: React.FC<LoginProviderProps> = ({ children }) => {
 
   // Check for existing wallet on mount
   useEffect(() => {
-    const existingClient = walletService.getCurrentWallet()
-    if (existingClient) {
-      setClient(existingClient)
-      setAddress(existingClient.account.address)
+    const data = walletService.getCurrentWalletAndEmail()
+    if (data && data.currentWallet) {
+      setEmail(data.email)
+      setClient(data.currentWallet)
+      setAddress(data.currentWallet.account.address)
     }
   }, [])
 

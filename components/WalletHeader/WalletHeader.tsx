@@ -1,4 +1,4 @@
-import { emailShortner, walletAddressShortner } from '@/app/utils/walletAddressUtils'
+import { emailShortener, walletAddressShortener } from '@/app/utils/walletAddressUtils'
 import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
@@ -84,7 +84,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
                 setShowWalletData(!showWalletData)
               }}
             >
-              <ThemedText style={[styles.addressText, { color: colors.text }]}>{emailShortner(email)}</ThemedText>
+              <ThemedText style={[styles.addressText, { color: colors.text }]}>{emailShortener(email)}</ThemedText>
             </TouchableOpacity>
           ) : (
             <ThemedButton onPress={handleConnect} buttonText="Connect Wallet"></ThemedButton>
@@ -93,9 +93,15 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
         {showWalletData && (
           <ThemedView style={[styles.showWalletDataContainer]}>
             <TouchableOpacity style={[styles.walletToClipboard]} onPress={copyToClipboard}>
-              <ThemedText style={[styles.addressText, { color: colors.text }]}>
-                {walletAddressShortner(address)}
-              </ThemedText>
+              {copied ? (
+                <ThemedText style={[styles.addressText, { color: colors.text }]}>
+                  copied!
+                </ThemedText>
+              ) : (
+                <ThemedText style={[styles.addressText, { color: colors.text }]}>
+                  {walletAddressShortener(address)}
+                </ThemedText>
+              )}
               <Feather name="copy" size={24} color="#666" />
             </TouchableOpacity>
 

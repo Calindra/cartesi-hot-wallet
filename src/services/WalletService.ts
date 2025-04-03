@@ -34,6 +34,15 @@ class WalletService {
     this._currentChain = chain
   }
 
+  getCurrentWalletAndEmail() {
+    const seed = SecureStore.getItem('user_password')
+    if (!seed) {
+      return
+    }
+    const email = seed.split('\t')[0]
+    return { email, currentWallet: this.getCurrentWallet() }
+  }
+
   getCurrentWallet() {
     const seed = SecureStore.getItem('user_password')
     if (!seed) {
