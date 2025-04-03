@@ -8,18 +8,12 @@ import {
 import Slider from '@react-native-community/slider';
 import * as SecureStore from 'expo-secure-store';
 import { ThemedButton } from './ThemedButton';
-
-interface Settings {
-  right: number;
-  left: number;
-  up: number;
-  down: number;
-}
+import { Settings } from '@/types/types';
 
 interface SettingsModalProps {
   visible: boolean;
   onClose: () => void;
-  onSettingsChange: (settings: Settings) => void;
+  onSettingsChange?: (settings: Settings) => void;
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
@@ -48,7 +42,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const realValue = userValue - 100; // Convert user value (0-200) to real value (-100 to 100)
     const newSettings = { ...settings, [key]: realValue };
     setSettings(newSettings);
-    onSettingsChange(newSettings);
+    onSettingsChange?.(newSettings);
     await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
   };
 

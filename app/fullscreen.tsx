@@ -1,9 +1,11 @@
+import SettingsModal from '@/components/SettingsModal'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { walletService } from '@/src/services/WalletService'
+import { Settings } from '@/types/types'
 import * as NavigationBar from 'expo-navigation-bar'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
@@ -22,30 +24,23 @@ import {
 } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
-import * as SecureStore from 'expo-secure-store'
 
 //TODO:
 const { height, width } = Dimensions.get('window')
 const paddingBottom = 30
 
-const injectedJS = async () => {
-  const defaultSettings = {
-    enabled: true,
-    right: 3,
-    left: -3,
-    up: -41,
-    down: -51,
-  };
-  const storedSettings = await SecureStore.getItemAsync('deviceOrientationSettings');
-  const deviceOrientation = storedSettings ? JSON.parse(storedSettings) : defaultSettings;
-
-  return `
-    window.__deviceOrientation = ${JSON.stringify(deviceOrientation)};
-    console.log("Device Orientation Settings:", window.__deviceOrientation);
+const injectedJS = `
     window.innerHeight = ${Math.min(width, height) - paddingBottom};
     window.innerWidth = ${Math.max(width, height)};
     console.log("=> width", ${width});
     console.log("=> height", ${height});
+    window.__deviceOrientation = {
+      enabled: true,
+      right: 10,
+      left: -3,
+      up: -41,
+      down: -51,
+    };
     (() => {
       const listeners = {};
       const requests = {};
@@ -103,8 +98,7 @@ const injectedJS = async () => {
       };
     })();
     true;
-  `;
-};
+`
 
 const currentTransaction: any = {}
 
@@ -119,6 +113,7 @@ export default function FullScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(true)
 
   const injectJS = `
   document.body.style.overflow = 'hidden';
@@ -136,13 +131,6 @@ export default function FullScreen() {
 
   useEffect(() => {
     changeOrientation()
-    const setupInjectedJS = async () => {
-      const jsCode = await injectedJS();
-      if (webViewRef.current) {
-        webViewRef.current.injectJavaScript(jsCode);
-      }
-    };
-    setupInjectedJS();
     if (webViewRef.current) {
       const changeGameJS = `
         console.log("loading...");
@@ -312,9 +300,30 @@ export default function FullScreen() {
     }
   }
 
+  const handleApplySettings = async (settings: Settings) => {
+    if (webViewRef.current) {
+      const settingsScript = `
+        window.__deviceOrientation = {
+          enabled: true,
+          right: ${settings.right},
+          left: ${settings.left},
+          up: ${settings.up},
+          down: ${settings.down},
+        };
+      `
+
+      webViewRef.current.injectJavaScript(settingsScript)
+    }
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerTitle: 'Game', headerShown: false }} />
+      <SettingsModal
+        visible={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onSettingsChange={handleApplySettings}
+      />
       <StatusBar hidden />
       <GestureHandlerRootView>
         <ThemedView style={styles.container}>
@@ -347,6 +356,8 @@ export default function FullScreen() {
               const { nativeEvent } = syntheticEvent
               console.warn('WebView error: ', nativeEvent)
             }}
+            injectedJavaScriptBeforeContentLoaded={injectedJS}
+            injectedJavaScript={injectJS}
             onMessage={handleMessage}
             webviewDebuggingEnabled={true}
           />
