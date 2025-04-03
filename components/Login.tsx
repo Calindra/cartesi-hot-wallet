@@ -56,7 +56,6 @@ interface Styles {
 
 const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
   const { email, setEmail } = useContext(LoginContext)
-  const [showEmail, setShowEmail] = useState<boolean>(false)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
