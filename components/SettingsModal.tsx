@@ -44,6 +44,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const newSettings = { ...settings, [key]: realValue };
     setSettings(newSettings);
     onSettingsChange?.(newSettings);
+    console.log('Updated settings:', newSettings);
     await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
   };
 
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    maxHeight: '75%'
   },
   modalTitle: {
     fontSize: 20,
@@ -152,7 +154,8 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: 20,
     height: 50,
-    alignSelf: 'stretch'
+    alignSelf: 'stretch',
+    marginBottom: 30
   }
 });
 

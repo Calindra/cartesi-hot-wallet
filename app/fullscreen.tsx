@@ -1,4 +1,5 @@
 import SettingsModal from '@/components/SettingsModal'
+import { ThemedButton } from '@/components/ThemedButton'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { Colors } from '@/constants/Colors'
@@ -113,7 +114,7 @@ export default function FullScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(true)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
   const injectJS = `
   document.body.style.overflow = 'hidden';
@@ -301,28 +302,39 @@ export default function FullScreen() {
   }
 
   const handleApplySettings = async (settings: Settings) => {
-    if (webViewRef.current) {
-      const settingsScript = `
-        window.__deviceOrientation = {
-          enabled: true,
-          right: ${settings.right},
-          left: ${settings.left},
-          up: ${settings.up},
-          down: ${settings.down},
-        };
-      `
-
-      webViewRef.current.injectJavaScript(settingsScript)
+    try {
+      if (webViewRef.current) {
+        const settingsScript = `
+          window.__deviceOrientation = {
+            enabled: true,
+            right: ${settings.right},
+            left: ${settings.left},
+            up: ${settings.up},
+            down: ${settings.down},
+          };
+          true;
+        `;
+        webViewRef.current.injectJavaScript(settingsScript);
+      }
+    } catch (error) {
+      console.error('Error applying settings:', error);
     }
   }
 
   return (
     <>
       <Stack.Screen options={{ headerTitle: 'Game', headerShown: false }} />
+      {/* TODO: MAKE IT WORK ON IOS */}
       <SettingsModal
-        visible={isSettingsModalOpen}
+        visible={Platform.OS === "ios" ? false : isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
+      />
+      {/* REMOVE LATER */}
+      <ThemedButton 
+        type="button" 
+        buttonText="Open settings" 
+        onPress={() => setIsSettingsModalOpen(true)} 
       />
       <StatusBar hidden />
       <GestureHandlerRootView>
