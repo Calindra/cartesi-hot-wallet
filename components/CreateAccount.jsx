@@ -15,6 +15,7 @@ import {
 } from 'react-native'
 
 const CreateAccount = ({ isVisible, onClose, onSave }) => {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -59,6 +60,7 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
     setPassword('')
     setConfirmPassword('')
     setError('')
+    setEmail('')
     onClose()
   }
 
@@ -108,10 +110,25 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
 
           <View style={styles.card}>
             <Feather name="lock" size={32} color="#4a90e2" style={styles.lockIcon} />
-            <ThemedText style={styles.title}>Create Password</ThemedText>
+            <ThemedText style={styles.title}>Create Account</ThemedText>
             <ThemedText style={styles.subtitle}>Choose a strong password to secure your account</ThemedText>
 
             <View style={styles.inputContainer}>
+              <View style={styles.inputIconContainer}>
+                <Feather name="mail" size={20} color="#666" />
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                placeholderTextColor="#999"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputIconContainer}>
+                <Feather name="lock" size={20} color="#666" />
+              </View>
               <TextInput
                 style={styles.input}
                 placeholder="Enter password"
@@ -133,6 +150,9 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
             )}
 
             <View style={styles.inputContainer}>
+              <View style={styles.inputIconContainer}>
+                <Feather name="lock" size={20} color="#666" />
+              </View>
               <TextInput
                 style={styles.input}
                 placeholder="Confirm password"
@@ -239,13 +259,21 @@ const styles = StyleSheet.create({
   inputContainer: {
     position: 'relative',
     marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputIconContainer: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 1,
   },
   input: {
+    flex: 1,
     height: 56,
     borderWidth: 1.5,
     borderColor: '#e1e1e1',
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 48,
     fontSize: 16,
     color: '#1a1a1a',
     backgroundColor: '#fff',
