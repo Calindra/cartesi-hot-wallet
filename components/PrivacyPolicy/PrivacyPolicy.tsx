@@ -1,0 +1,220 @@
+import { Feather } from '@expo/vector-icons'
+import React, { useState } from 'react'
+import {
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextStyle,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+    ViewStyle,
+} from 'react-native'
+import { ThemedText } from '../ThemedText'
+import * as SecureStore from 'expo-secure-store';
+
+
+
+interface Styles {
+    modalContainer: ViewStyle
+    overlay: ViewStyle
+    modalContent: ViewStyle
+    headerContainer: ViewStyle
+    closeButton: ViewStyle
+    card: ViewStyle
+    userIcon: ViewStyle
+    title: TextStyle
+    signupContainer: ViewStyle
+    signupText: TextStyle
+    agreeButton: ViewStyle
+    agreeButtonText: TextStyle
+}
+
+async function savePrivacyPolicyAgreement(value: boolean) {
+    console.log("SALVOU>>>>>>>>>>>.", value)
+    await SecureStore.setItemAsync('PrivacyPolicyAgreement', JSON.stringify(value))
+}
+
+interface PrivacyPolicyProps {
+    onClose: () => void
+}
+
+const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onClose }) => {
+
+    const PrivacyPolicyContent = `This Privacy Policy describes how your personal information is collected, used, and shared when you use our mobile application (“App”), provided by [INSERT COMPANY NAME].
+
+1. Information We Collect
+When you use the App, we may collect the following information:
+
+Personal information: such as your name, email, and phone number (if provided).
+Usage information: data about how you interact with the App, features accessed, and duration of use.
+Device information: device model, operating system, language, and App version.
+Location: if you allow it, we may collect your approximate location.
+
+2. How We Use Your Information
+The information we collect may be used to:
+- Provide and maintain the functionality of the App;
+- Personalize your user experience;
+- Improve the performance and functionality of the App;
+- Contact you if necessary;
+- Comply with legal and regulatory obligations.
+
+3. Sharing of Information
+We do not share your personal information with third parties, except:
+- With service providers who help us operate the App, under confidentiality agreements;
+- When required by law or by competent authorities;
+- In case of a merger, acquisition, or sale of assets, your information may be transferred to the new owners.
+
+4. Security
+We implement technical and organizational measures to protect your information against unauthorized access, alteration, disclosure, or destruction.
+
+5. Data Retention
+We retain your information only for as long as necessary to fulfill the purposes described in this policy, unless otherwise required by legal obligations.
+
+6. Your Rights
+At any time, you may:
+- Request access to the personal information we hold about you;
+- Correct incorrect or outdated information;
+- Request deletion of your data;
+- Withdraw previously given consents.
+To exercise your rights, please contact us at [INSERT CONTACT EMAIL OR CHANNEL].
+
+7. Children
+Our App is not directed at children under 13 years of age. We do not knowingly collect personal information from children. If we learn that we have collected such data, we will take appropriate steps to delete it.
+
+8. Changes to This Policy
+We may update this Privacy Policy from time to time. You will be notified of any significant changes through the App or by another appropriate channel.
+
+9. Contact
+If you have any questions about this Privacy Policy or how we handle your information, please contact:
+[INSERT COMPANY NAME]
+[INSERT ADDRESS]
+[INSERT CONTACT EMAIL]
+`
+    const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false)
+    const handleScroll = (event: any) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent
+        const isAtBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20
+
+        if (isAtBottom && !hasScrolledToEnd) {
+            setHasScrolledToEnd(true)
+        }
+    }
+
+
+    return (
+        <Modal transparent animationType="slide">
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
+                <TouchableWithoutFeedback>
+                    <View style={styles.overlay} />
+                </TouchableWithoutFeedback>
+
+                <View style={styles.modalContent}>
+                    <View style={styles.headerContainer}>
+
+                    </View>
+
+                    <View style={styles.card}>
+                        <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
+                        <ThemedText style={styles.title}>Privacy Policy</ThemedText>
+                        <View style={{ flex: 1 }}>
+                            <ScrollView onScroll={handleScroll} scrollEventThrottle={100} showsVerticalScrollIndicator>
+                                <View style={styles.signupContainer}>
+                                    <ThemedText style={styles.signupText}>
+                                        {PrivacyPolicyContent}
+                                    </ThemedText>
+                                </View>
+                            </ScrollView>
+                        </View>
+                        <TouchableOpacity style={[
+                            styles.agreeButton,
+                            { opacity: hasScrolledToEnd ? 1 : 0.5 }
+                        ]} onPress={async () => {
+                            await savePrivacyPolicyAgreement(true)
+                            onClose()
+                        }}
+
+                            disabled={!hasScrolledToEnd}>
+                            <ThemedText style={styles.agreeButtonText}>I Agree</ThemedText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+    )
+}
+
+const styles = StyleSheet.create<Styles>({
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#f5f6fa',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        // maxHeight: '90%',
+        flex: 1,
+    },
+    headerContainer: {
+        padding: 16,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    closeButton: {
+        padding: 8,
+    },
+    card: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        paddingTop: 8,
+        flexGrow: 1,
+        flex: 1,
+    },
+    userIcon: {
+        alignSelf: 'center',
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: '#1a1a1a',
+        marginBottom: 8,
+    },
+    signupContainer: {
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 8,
+        paddingBottom: 16,
+    },
+    signupText: {
+        color: '#000',
+        fontSize: 14,
+        textAlign: 'left',
+        lineHeight: 20,
+    },
+    agreeButton: {
+        marginTop: 16,
+        backgroundColor: '#4a90e2',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    agreeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+})
+
+export default PrivacyPolicy
