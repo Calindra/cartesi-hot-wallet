@@ -27,7 +27,7 @@ const gameData: GameData[] = [
     webview: false,
     // webviewURI: 'https://0f82-200-152-100-218.ngrok-free.app/landscape-fullscreen',
     // webviewURI: 'https://0f82-200-152-100-218.ngrok-free.app/doom-smooth-turn',
-    webviewURI: 'https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/doom.html',
+    webviewURI: 'https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/doom-with-arrows.html',
   },
   {
     id: '3',
