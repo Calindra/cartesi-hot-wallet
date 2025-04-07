@@ -350,7 +350,7 @@ export default function FullScreen() {
             transparent={true}
             animationType="slide"
             onRequestClose={() => setModalVisible(false)}
-            supportedOrientations={['landscape-right']} // works=true
+            supportedOrientations={['portrait','landscape-right']} // works=true
           >
             <TouchableOpacity
               style={styles.modalContainer}
