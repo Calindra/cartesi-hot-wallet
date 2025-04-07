@@ -6,7 +6,6 @@ import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { walletService } from '@/src/services/WalletService'
-import { Settings } from '@/types/types'
 import * as NavigationBar from 'expo-navigation-bar'
 import * as SecureStore from 'expo-secure-store'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
@@ -26,6 +25,7 @@ import {
 } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
+import { Settings } from '@/src/model/Settings'
 
 const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/landscape-fullscreen.html"
 
@@ -38,8 +38,8 @@ const injectedJS = `
     window.innerWidth = ${Math.max(width, height)};
     window.__deviceOrientation = {
       enabled: true,
-      right: 10,
-      left: -3,
+      right: 5,
+      left: -5,
       up: -41,
       down: -51,
     };
@@ -159,21 +159,47 @@ export default function FullScreen() {
       />
     ) : null
 
+  const onMovementModeChange = (url: string) => {
+    let aux = (webviewURI as string).split('/');
+    aux.pop();
+    url = `${aux.join('/')}/${url}`;
+    console.log('onMovementModeChange', url)
+    if (webViewRef.current) {
+      const settingsScript = `
+        window.location.href = ${JSON.stringify(url)};
+        true;
+      `
+      webViewRef.current.injectJavaScript(settingsScript)
+    }
+  }
+
   const handleApplySettings = async (settings: Settings) => {
     if (webViewRef.current) {
+      const leftRight = settings.deviceOrientation.leftRight;
+      const LR = 30;
+      const lr = (1 - (leftRight / 200)) * LR;
+      const left = -lr;
+      const right = lr;
+      const upDown = settings.deviceOrientation.upDown;
+      const ud = (1 - (upDown / 200)) * LR;
+      const upDownAngle = -settings.deviceOrientation.upDownAngle;
+      const up = upDownAngle + ud;
+      const down = upDownAngle - ud;
+      console.log({ up, down, upDown, upDownAngle })
       const settingsScript = `
         window.__deviceOrientation = {
           enabled: true,
-          right: ${settings.right},
-          left: ${settings.left},
-          up: ${settings.up},
-          down: ${settings.down},
+          right: ${right},
+          left: ${left},
+          up: ${up},
+          down: ${down},
         };
         true;
       `
       webViewRef.current.injectJavaScript(settingsScript)
     }
   }
+
   const cancelTransaction = async () => {
     setModalVisible(false)
     const response = {
@@ -310,7 +336,7 @@ export default function FullScreen() {
         visible={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
-        onMovementModeChange={(mode) => setMovementMode(mode === 'tilt' ? 'tilt' : 'arrows')}
+        onMovementModeChange={onMovementModeChange}
       />
 
       <StatusBar hidden />
@@ -344,7 +370,7 @@ export default function FullScreen() {
             transparent={true}
             animationType="slide"
             onRequestClose={() => setModalVisible(false)}
-            supportedOrientations={['portrait','landscape-right']} // works=true
+            supportedOrientations={['portrait', 'landscape-right']} // works=true
           >
             <TouchableOpacity
               style={styles.modalContainer}

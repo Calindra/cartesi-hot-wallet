@@ -17,7 +17,7 @@ import { WalletHeader } from './WalletHeader/WalletHeader'
 
 import LoginContext from '@/hooks/loginContext'
 import { walletService } from '@/src/services/WalletService'
-import { Settings } from '@/types/types'
+import { Settings } from '@/src/model/Settings'
 
 export async function getPrivacyPolicyAgreement(): Promise<boolean> {
   const value = await SecureStore.getItemAsync('PrivacyPolicyAgreement')

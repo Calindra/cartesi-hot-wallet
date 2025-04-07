@@ -10,7 +10,7 @@ import {
 import Slider from '@react-native-community/slider';
 import * as SecureStore from 'expo-secure-store';
 import { ThemedButton } from './ThemedButton';
-import { Settings } from '@/types/types';
+import { DeviceOrientation, getDefaultSettings, Settings } from '@/src/model/Settings';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -25,12 +25,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   onSettingsChange,
   onMovementModeChange,
 }) => {
-  const [settings, setSettings] = useState<Settings>({
-    right: 3,
-    left: -3,
-    up: -41,
-    down: -51,
-  });
+  const [settings, setSettings] = useState<Settings>(getDefaultSettings());
 
   const [useTilt, setUseTilt] = useState(false);
 
@@ -39,7 +34,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       const storedSettings = await SecureStore.getItemAsync('deviceOrientationSettings');
       const tiltSetting = await SecureStore.getItemAsync('movementMode');
       if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
+        const stored = JSON.parse(storedSettings)
+        if (!stored.deviceOrientation) {
+          stored.deviceOrientation = getDefaultSettings().deviceOrientation;
+        }
+        if (!stored.movementMode) {
+          stored.movementMode = getDefaultSettings().movementMode;
+        }
+        setSettings(stored);
       }
       if (tiltSetting !== null) {
         const tilt = tiltSetting === 'tilt';
@@ -50,21 +52,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     loadSettings();
   }, []);
 
-  const handleSliderChange = async (key: keyof Settings, userValue: number) => {
-    const realValue = userValue - 100;
-    const newSettings = { ...settings, [key]: realValue };
+  const handleSliderChange = async (key: keyof DeviceOrientation, userValue: number) => {
+    const realValue = userValue;
+    const newSettings = { ...settings, deviceOrientation: {...settings.deviceOrientation, [key]: realValue} };
     setSettings(newSettings);
     onSettingsChange?.(newSettings);
-    await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
+    // await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
   };
 
   const handleToggle = async (value: boolean) => {
     setUseTilt(value);
     await SecureStore.setItemAsync('movementMode', value ? 'tilt' : 'arrows');
-    onMovementModeChange?.(value ? 'doom-smooth-turns.html' : 'doom-with-arrows.html');
+    onMovementModeChange?.(value ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
   };
 
-  const renderSlider = (key: keyof Settings, label: string) => (
+  const renderSlider = (key: keyof DeviceOrientation, label: string, settings: Settings) => (
     <View style={styles.sliderContainer}>
       <Text style={styles.sliderLabel}>{label}</Text>
       <Slider
@@ -72,13 +74,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         minimumValue={0}
         maximumValue={200}
         step={1}
-        value={settings[key] + 100}
-        onValueChange={(userValue) => handleSliderChange(key, userValue)}
+        value={settings.deviceOrientation[key]}
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#333333"
         thumbTintColor="#FFFFFF"
+        onSlidingComplete={(userValue) => {
+          handleSliderChange(key, userValue);
+        }}
       />
-      <Text style={styles.sliderValue}>{String(settings[key] + 100)}</Text>
+      <Text style={styles.sliderValue}>{String(settings.deviceOrientation[key] + 100)}</Text>
     </View>
   );
 
@@ -110,15 +114,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </View>
 
           <Text style={styles.modalSubtitle}>Controller Sensitivity</Text>
-          {renderSlider('right', 'Right')}
-          {renderSlider('left', 'Left')}
-          {renderSlider('up', 'Up')}
-          {renderSlider('down', 'Down')}
+          {renderSlider('leftRight', '(-) Left Right (+)', settings)}
+          {renderSlider('upDown', '(-) Up Down (+)', settings)}
+          {renderSlider('upDownAngle', 'Up Down Angle', settings)}
 
           <ThemedButton
             type="button"
             buttonText="Close"
-            onPress={onClose}
+            onPress={() => {
+              SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(settings));
+              onClose()
+            }}
             style={styles.closeButton}
           />
         </ScrollView>
