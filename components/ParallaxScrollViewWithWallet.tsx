@@ -102,6 +102,7 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             isVisible={showLogin}
             onClose={() => setShowLogin(false)}
             onLogin={handleLogin}
+            setShowCreateAccount={setShowCreateAccount}
           />
           <OnboardingModal
             isVisible={showOnboarding}

@@ -27,6 +27,9 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 
+const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/landscape-fullscreen.html"
+
+//TODO:
 const { height, width } = Dimensions.get('window')
 const paddingBottom = 30
 
@@ -88,7 +91,7 @@ const injectedJS = `
 const currentTransaction: any = {}
 
 export default function FullScreen() {
-  const { gameURL } = useLocalSearchParams()
+  const { gameURL, webviewURI } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -170,6 +173,68 @@ export default function FullScreen() {
       webViewRef.current.injectJavaScript(settingsScript)
     }
   }
+  const cancelTransaction = async () => {
+    setModalVisible(false)
+    const response = {
+      reqId: currentTransaction.request.reqId,
+      error: {
+        message: `The user canceled the transaction`,
+      },
+    }
+    const eventScript = `
+      window.ethereum.responseReceiver(${JSON.stringify(response)});
+      true; // To ensure execution is finished
+    `
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(eventScript)
+    }
+  }
+  const handleTransaction = async () => {
+    setModalVisible(false)
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      // TODO: open the login screen
+      console.log('TODO: open the login screen.')
+      return
+    }
+    try {
+      console.log('Sending transaction...')
+      const txHash = await client.sendTransaction(currentTransaction.params)
+      console.log('Transaction Hash:', txHash)
+      const result = txHash
+      console.log('result', result)
+      const response = {
+        reqId: currentTransaction.request.reqId,
+        result,
+      }
+      const eventScript = `
+        window.ethereum.responseReceiver(${JSON.stringify(response)});
+        true; // To ensure execution is finished
+      `
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(eventScript)
+      }
+    } catch (e) {
+      console.error(`Error sending transaction`, e);
+      if (e instanceof Error) {
+        const response = {
+          reqId: currentTransaction.request.reqId,
+          result: {
+            error: {
+              message: e.message,
+            }
+          },
+        };
+        const eventScript = `
+          window.ethereum.responseReceiver(${JSON.stringify(response)});
+          true; // To ensure execution is finished
+        `
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(eventScript)
+        }
+      }
+    }
+  }
 
   const handleMessage = async (event: WebViewMessageEvent) => {
     const client = walletService.getCurrentWallet()
@@ -177,88 +242,64 @@ export default function FullScreen() {
       setAddress('')
       return
     }
-
-    const message = event.nativeEvent.data
-    const request = JSON.parse(message)
-
-    if (request.method === 'request') {
-      try {
-        let result
-        if (request.args.method === 'eth_requestAccounts' || request.args.method === 'eth_accounts') {
-          result = [client.account?.address]
-        } else if (request.args.method === 'eth_sendTransaction') {
-          const params = request.args.params[0]
-          currentTransaction.params = {
-            ...params,
-            account: client.account!,
-            gasLimit: params.gas,
-            gas: undefined,
+    const message = event.nativeEvent.data // Get message from WebView
+    if (message === 'openSettings') {
+      console.log('Open Settings')
+      return
+    }
+    // Alert.alert("Message from WebView", message);
+    if (webViewRef.current) {
+      const request = JSON.parse(message)
+      console.log('Raw request', request)
+      if (request.method === 'request') {
+        try {
+          console.log(request)
+          let result
+          if (request.args.method === 'eth_requestAccounts' || request.args.method === 'eth_accounts') {
+            result = [client.account?.address]
+          } else if (request.args.method === 'eth_sendTransaction') {
+            const params = request.args.params[0]
+            currentTransaction.params = {
+              ...params,
+              account: client.account!,
+              gasLimit: params.gas,
+              gas: undefined,
+            }
+            currentTransaction.request = request
+            console.log('transactionParams', currentTransaction)
+            setModalVisible(true)
+            return
+          } else {
+            result = await client.request(request.args)
           }
-          currentTransaction.request = request
-          setModalVisible(true)
-          return
-        } else {
-          result = await client.request(request.args)
+          console.log('result', result)
+          const response = {
+            reqId: request.reqId,
+            result,
+          }
+          const eventScript = `
+            window.ethereum.responseReceiver(${JSON.stringify(response)});
+            true; // To ensure execution is finished
+          `
+          webViewRef.current.injectJavaScript(eventScript)
+        } catch (e) {
+          console.error(e)
         }
-
-        const response = { reqId: request.reqId, result }
-        webViewRef.current?.injectJavaScript(`
-          window.ethereum.responseReceiver(${JSON.stringify(response)});
-          true;
-        `)
-      } catch (e) {
-        console.error(e)
+      } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
+        console.log('Register listener', request)
+        const result = [client.account?.address]
+        const response = {
+          eventName: request.eventName,
+          result,
+        }
+        const eventScript = `
+          window.ethereum.eventReceiver(${JSON.stringify(response)});
+          true; // To ensure execution is finished
+        `
+        webViewRef.current.injectJavaScript(eventScript)
       }
-    } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
-      const result = [client.account?.address]
-      const response = { eventName: request.eventName, result }
-      webViewRef.current?.injectJavaScript(`
-        window.ethereum.eventReceiver(${JSON.stringify(response)});
-        true;
-      `)
     }
   }
-
-  const handleTransaction = async () => {
-    setModalVisible(false)
-    const client = walletService.getCurrentWallet()
-    if (!client) return
-
-    try {
-      const txHash = await client.sendTransaction(currentTransaction.params)
-      const response = {
-        reqId: currentTransaction.request.reqId,
-        result: txHash,
-      }
-      webViewRef.current?.injectJavaScript(`
-        window.ethereum.responseReceiver(${JSON.stringify(response)});
-        true;
-      `)
-    } catch (e) {
-      const response = {
-        reqId: currentTransaction.request.reqId,
-        error: { message: e.message },
-      }
-      webViewRef.current?.injectJavaScript(`
-        window.ethereum.responseReceiver(${JSON.stringify(response)});
-        true;
-      `)
-    }
-  }
-
-  const cancelTransaction = async () => {
-    setModalVisible(false)
-    const response = {
-      reqId: currentTransaction.request.reqId,
-      error: { message: 'The user canceled the transaction' },
-    }
-    webViewRef.current?.injectJavaScript(`
-      window.ethereum.responseReceiver(${JSON.stringify(response)});
-      true;
-    `)
-  }
-
-  const gamepadPath = movementMode === 'tilt' ? 'doom-smooth-turn' : 'doom-with-arrows'
 
   return (
     <>
@@ -284,7 +325,7 @@ export default function FullScreen() {
           <WebView
             ref={webViewRef}
             source={{
-              uri: `https://c5d4-2804-d41-e329-9600-b900-2aab-626f-447f.ngrok-free.app/${gamepadPath}`,
+              uri: (webviewURI as string) || DEFAULT_GAME_PAGE,
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
@@ -340,6 +381,7 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   loader: {
     position: 'absolute',

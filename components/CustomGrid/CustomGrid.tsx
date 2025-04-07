@@ -1,17 +1,8 @@
 import GameCartridge from '@/components/GameCartridge/GameCartridge'
+import { GameData } from '@/src/model/GameData'
 import { Link } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { Dimensions, StyleSheet, View } from 'react-native'
-
-// Define the type for game data
-interface GameData {
-  id: string
-  title: string
-  author: string
-  imageUrl: string
-  gameURL: string
-  webview: boolean
-}
 
 interface CustomGridProps {
   data: GameData[]
@@ -58,6 +49,7 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
                 pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
                 params: {
                   gameURL: item.gameURL,
+                  webviewURI: item.webviewURI,
                 },
               }}
               style={styles.columnContainer}

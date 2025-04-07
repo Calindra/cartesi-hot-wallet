@@ -26,6 +26,7 @@ interface LoginModalProps {
   isVisible: boolean
   onClose: () => void
   onLogin: (credentials: LoginCredentials) => Promise<void>
+  setShowCreateAccount: (value: boolean) => void
 }
 
 interface Styles {
@@ -54,9 +55,8 @@ interface Styles {
   signupLink: TextStyle
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, setShowCreateAccount }) => {
   const { email, setEmail } = useContext(LoginContext)
-  const [showEmail, setShowEmail] = useState<boolean>(false)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -205,6 +205,15 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
             </Animated.View>
 
             <View style={styles.signupContainer}>
+              <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
+              <TouchableOpacity
+                onPress={() => setShowCreateAccount(true)}
+              >
+                <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            {/* <View style={styles.signupContainer}>
               <ThemedText style={styles.signupText}>
                 Don't have an account? Remember, use a strong UNIQUE password to create one.
               </ThemedText>
@@ -212,7 +221,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 The password you choose is the only attachment between you and your account
               </ThemedText>
               <ThemedText style={styles.signupText}>There is no password recovery</ThemedText>
-            </View>
+            </View> */}
           </View>
         </View>
       </KeyboardAvoidingView>
