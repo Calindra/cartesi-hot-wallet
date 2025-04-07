@@ -245,7 +245,7 @@ export default function FullScreen() {
     }
     const message = event.nativeEvent.data // Get message from WebView
     if (message === 'openSettings') {
-      console.log('Open Settings')
+      setIsSettingsModalOpen(true)
       return
     }
     // Alert.alert("Message from WebView", message);
@@ -311,12 +311,6 @@ export default function FullScreen() {
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
         onMovementModeChange={(mode) => setMovementMode(mode === 'tilt' ? 'tilt' : 'arrows')}
-      />
-
-      <ThemedButton
-        type="button"
-        buttonText="Open settings"
-        onPress={() => setIsSettingsModalOpen(true)}
       />
 
       <StatusBar hidden />

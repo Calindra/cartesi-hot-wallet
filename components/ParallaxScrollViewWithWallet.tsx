@@ -85,9 +85,9 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
 
   return (
     <>
-      {showPrivacyPolicy && (
+      {/* {showPrivacyPolicy && (
         <PrivacyPolicy onClose={handleClosePrivacyPolicy} />
-      )}
+      )} */}
       <View style={styles.container}>
         <ParallaxScrollView
           {...props}
