@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  Modal, 
-  StyleSheet, 
-  ScrollView
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  ScrollView,
+  Switch,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import * as SecureStore from 'expo-secure-store';
@@ -15,37 +16,52 @@ interface SettingsModalProps {
   visible: boolean;
   onClose: () => void;
   onSettingsChange?: (settings: Settings) => void;
+  onMovementModeChange?: (url: string) => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ 
-  visible, 
-  onClose, 
-  onSettingsChange 
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  visible,
+  onClose,
+  onSettingsChange,
+  onMovementModeChange,
 }) => {
   const [settings, setSettings] = useState<Settings>({
     right: 3,
     left: -3,
     up: -41,
-    down: -51
+    down: -51,
   });
+
+  const [useTilt, setUseTilt] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
       const storedSettings = await SecureStore.getItemAsync('deviceOrientationSettings');
+      const tiltSetting = await SecureStore.getItemAsync('movementMode');
       if (storedSettings) {
         setSettings(JSON.parse(storedSettings));
+      }
+      if (tiltSetting !== null) {
+        const tilt = tiltSetting === 'tilt';
+        setUseTilt(tilt);
+        onMovementModeChange?.(tilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
       }
     };
     loadSettings();
   }, []);
 
   const handleSliderChange = async (key: keyof Settings, userValue: number) => {
-    const realValue = userValue - 100; // Convert user value (0-200) to real value (-100 to 100)
+    const realValue = userValue - 100;
     const newSettings = { ...settings, [key]: realValue };
     setSettings(newSettings);
     onSettingsChange?.(newSettings);
-    console.log('Updated settings:', newSettings);
     await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
+  };
+
+  const handleToggle = async (value: boolean) => {
+    setUseTilt(value);
+    await SecureStore.setItemAsync('movementMode', value ? 'tilt' : 'arrows');
+    onMovementModeChange?.(value ? 'doom-smooth-turns.html' : 'doom-with-arrows.html');
   };
 
   const renderSlider = (key: keyof Settings, label: string) => (
@@ -53,10 +69,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       <Text style={styles.sliderLabel}>{label}</Text>
       <Slider
         style={styles.slider}
-        minimumValue={0} // User sees 0-200
+        minimumValue={0}
         maximumValue={200}
         step={1}
-        value={settings[key] + 100} // Convert real value (-100 to 100) to user value (0-200)
+        value={settings[key] + 100}
         onValueChange={(userValue) => handleSliderChange(key, userValue)}
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#333333"
@@ -74,23 +90,35 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <ScrollView 
-          style={styles.modalContent} 
+        <ScrollView
+          style={styles.modalContent}
           contentContainerStyle={{ alignItems: 'center' }}
         >
           <Text style={styles.modalTitle}>Settings</Text>
+
+          <View style={styles.toggleContainer}>
+            <Text style={styles.modalSubtitle}>
+              Movement Mode: {useTilt ? 'Tilt' : 'Arrows'}
+            </Text>
+            <Switch
+              value={useTilt}
+              onValueChange={handleToggle}
+              thumbColor={useTilt ? '#4CAF50' : '#f4f3f4'}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
+            />
+          </View>
+
           <Text style={styles.modalSubtitle}>Controller Sensitivity</Text>
-          
           {renderSlider('right', 'Right')}
           {renderSlider('left', 'Left')}
           {renderSlider('up', 'Up')}
           {renderSlider('down', 'Down')}
-          
-          <ThemedButton 
-            type="button" 
-            buttonText="Close" 
-            onPress={onClose} 
-            style={styles.closeButton} 
+
+          <ThemedButton
+            type="button"
+            buttonText="Close"
+            onPress={onClose}
+            style={styles.closeButton}
           />
         </ScrollView>
       </View>
@@ -103,7 +131,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.8)'
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   modalContent: {
     width: '85%',
@@ -111,52 +139,56 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    maxHeight: '75%'
+    maxHeight: '75%',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 10
+    marginBottom: 10,
   },
   modalSubtitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#CCCCCC',
-    marginBottom: 20
+    marginBottom: 10,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 20,
   },
   sliderContainer: {
     width: '100%',
     marginBottom: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   sliderLabel: {
     fontSize: 16,
     color: '#FFFFFF',
-    marginBottom: 10
+    marginBottom: 10,
   },
   slider: {
     width: '100%',
-    height: 40
+    height: 40,
   },
   sliderValue: {
     fontSize: 16,
     color: '#FFFFFF',
-    marginTop: 5
+    marginTop: 5,
   },
   closeButton: {
     marginTop: 20,
     height: 50,
     alignSelf: 'stretch',
-    marginBottom: 30
-  }
+    marginBottom: 30,
+  },
 });
 
 export default SettingsModal;

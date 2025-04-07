@@ -8,6 +8,7 @@ import { useColorScheme } from '@/hooks/useColorScheme'
 import { walletService } from '@/src/services/WalletService'
 import { Settings } from '@/types/types'
 import * as NavigationBar from 'expo-navigation-bar'
+import * as SecureStore from 'expo-secure-store'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useContext, useEffect, useRef, useState } from 'react'
@@ -26,15 +27,12 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 
-//TODO:
 const { height, width } = Dimensions.get('window')
 const paddingBottom = 30
 
 const injectedJS = `
     window.innerHeight = ${Math.min(width, height) - paddingBottom};
     window.innerWidth = ${Math.max(width, height)};
-    console.log("=> width", ${width});
-    console.log("=> height", ${height});
     window.__deviceOrientation = {
       enabled: true,
       right: 10,
@@ -49,27 +47,21 @@ const injectedJS = `
         request: (args) => {
           const reqId = crypto.randomUUID();
           const req = { method: "request", reqId, args };
-          window.ReactNativeWebView.postMessage(JSON.stringify(req)); //todo: essa mensagem entra no handleMessage
-          const promiseWrapper = {}
+          window.ReactNativeWebView.postMessage(JSON.stringify(req));
+          const promiseWrapper = {};
           promiseWrapper.promise = new Promise((resolve, reject) => {
             promiseWrapper.resolve = resolve;
             promiseWrapper.reject = reject;
           });
           requests[reqId] = promiseWrapper;
-          console.log("request", req);
           return promiseWrapper.promise;
         },
         on: (eventName, listenerFn) => {
-          try {
-            console.log('on', eventName)
-            const reqId = crypto.randomUUID();
-            let mapFun = listeners[eventName] || new Map();
-            mapFun.set(listenerFn, reqId);
-            listeners[eventName] = mapFun;
-            window.ReactNativeWebView.postMessage(JSON.stringify({ method: "on", reqId, eventName }));
-          } catch(e) {
-            console.log(e)
-          }
+          const reqId = crypto.randomUUID();
+          let mapFun = listeners[eventName] || new Map();
+          mapFun.set(listenerFn, reqId);
+          listeners[eventName] = mapFun;
+          window.ReactNativeWebView.postMessage(JSON.stringify({ method: "on", reqId, eventName }));
         },
         removeListener: (...args) => {
           const reqId = crypto.randomUUID();
@@ -77,24 +69,16 @@ const injectedJS = `
         },
         eventReceiver: (event) => {
           const map = listeners[event.eventName];
-          if (!map) {
-            return
-          }
-          for (const fn of map.keys()) {
-            fn(event.result)
-          }
+          if (!map) return;
+          for (const fn of map.keys()) fn(event.result);
         },
         responseReceiver: (response) => {
-          console.log("response", response)
-          if (!requests[response.reqId]) {
-            console.log("ReqID not found", response.reqId, requests)
-            return
-          }
+          if (!requests[response.reqId]) return;
           if (response.error) {
-            requests[response.reqId].reject(new Error(response.error.message))
-            return
+            requests[response.reqId].reject(new Error(response.error.message));
+            return;
           }
-          requests[response.reqId].resolve(response.result)
+          requests[response.reqId].resolve(response.result);
         },
       };
     })();
@@ -116,37 +100,35 @@ export default function FullScreen() {
   const { setAddress } = useContext(LoginContext)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
 
+  const [movementMode, setMovementMode] = useState<'arrows' | 'tilt'>('arrows')
+
   const injectJS = `
-  document.body.style.overflow = 'hidden';
-  rivemuUploadCartridge("${gameURL}")
-    .then(() => {
-      resizeCanvas();
-    })
-  true; // To ensure execution is finished
+    document.body.style.overflow = 'hidden';
+    rivemuUploadCartridge("${gameURL}")
+      .then(() => {
+        resizeCanvas();
+      });
+    true;
   `
 
   const changeOrientation = async () => {
     await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT)
-    console.log('Set orientation to LANDSCAPE_RIGHT')
   }
 
   useEffect(() => {
-    changeOrientation()
-    if (webViewRef.current) {
-      const changeGameJS = `
-        console.log("loading...");
-        rivemuUploadCartridge("${gameURL}")
-          .then(() => {
-            resizeCanvas();
-          })
-        true;
-      `
-      webViewRef.current.injectJavaScript(changeGameJS)
-      if (Platform.OS === 'android') {
+    const initialize = async () => {
+      await changeOrientation()
+
+      const storedMode = await SecureStore.getItemAsync('movementMode')
+      setMovementMode(storedMode === 'tilt' ? 'tilt' : 'arrows')
+
+      if (webViewRef.current && Platform.OS === 'android') {
         NavigationBar.setVisibilityAsync('hidden')
       }
     }
-  }, [gameURL, webViewRef])
+
+    initialize()
+  }, [gameURL])
 
   const onLoadProgress = ({ nativeEvent }: { nativeEvent: { progress: number } }) => {
     setProgress(nativeEvent.progress)
@@ -157,8 +139,8 @@ export default function FullScreen() {
     }).start()
   }
 
-  const ProgressBar = () => {
-    return progress !== 1 ? (
+  const ProgressBar = () =>
+    progress !== 1 ? (
       <Animated.View
         style={[
           styles.progressBar,
@@ -172,52 +154,95 @@ export default function FullScreen() {
         ]}
       />
     ) : null
+
+  const handleApplySettings = async (settings: Settings) => {
+    if (webViewRef.current) {
+      const settingsScript = `
+        window.__deviceOrientation = {
+          enabled: true,
+          right: ${settings.right},
+          left: ${settings.left},
+          up: ${settings.up},
+          down: ${settings.down},
+        };
+        true;
+      `
+      webViewRef.current.injectJavaScript(settingsScript)
+    }
+  }
+
+  const handleMessage = async (event: WebViewMessageEvent) => {
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      setAddress('')
+      return
+    }
+
+    const message = event.nativeEvent.data
+    const request = JSON.parse(message)
+
+    if (request.method === 'request') {
+      try {
+        let result
+        if (request.args.method === 'eth_requestAccounts' || request.args.method === 'eth_accounts') {
+          result = [client.account?.address]
+        } else if (request.args.method === 'eth_sendTransaction') {
+          const params = request.args.params[0]
+          currentTransaction.params = {
+            ...params,
+            account: client.account!,
+            gasLimit: params.gas,
+            gas: undefined,
+          }
+          currentTransaction.request = request
+          setModalVisible(true)
+          return
+        } else {
+          result = await client.request(request.args)
+        }
+
+        const response = { reqId: request.reqId, result }
+        webViewRef.current?.injectJavaScript(`
+          window.ethereum.responseReceiver(${JSON.stringify(response)});
+          true;
+        `)
+      } catch (e) {
+        console.error(e)
+      }
+    } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
+      const result = [client.account?.address]
+      const response = { eventName: request.eventName, result }
+      webViewRef.current?.injectJavaScript(`
+        window.ethereum.eventReceiver(${JSON.stringify(response)});
+        true;
+      `)
+    }
   }
 
   const handleTransaction = async () => {
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
-    if (!client) {
-      // TODO: open the login screen
-      console.log('TODO: open the login screen.')
-      return
-    }
+    if (!client) return
+
     try {
-      console.log('Sending transaction...')
       const txHash = await client.sendTransaction(currentTransaction.params)
-      console.log('Transaction Hash:', txHash)
-      const result = txHash
-      console.log('result', result)
       const response = {
         reqId: currentTransaction.request.reqId,
-        result,
+        result: txHash,
       }
-      const eventScript = `
+      webViewRef.current?.injectJavaScript(`
         window.ethereum.responseReceiver(${JSON.stringify(response)});
-        true; // To ensure execution is finished
-      `
-      if (webViewRef.current) {
-        webViewRef.current.injectJavaScript(eventScript)
-      }
+        true;
+      `)
     } catch (e) {
-      console.error(`Error sending transaction`, e);
-      if (e instanceof Error) {
-        const response = {
-          reqId: currentTransaction.request.reqId,
-          result: {
-            error: {
-              message: e.message,
-            }
-          },
-        };
-        const eventScript = `
-          window.ethereum.responseReceiver(${JSON.stringify(response)});
-          true; // To ensure execution is finished
-        `
-        if (webViewRef.current) {
-          webViewRef.current.injectJavaScript(eventScript)
-        }
+      const response = {
+        reqId: currentTransaction.request.reqId,
+        error: { message: e.message },
       }
+      webViewRef.current?.injectJavaScript(`
+        window.ethereum.responseReceiver(${JSON.stringify(response)});
+        true;
+      `)
     }
   }
 
@@ -225,117 +250,33 @@ export default function FullScreen() {
     setModalVisible(false)
     const response = {
       reqId: currentTransaction.request.reqId,
-      error: {
-        message: `The user canceled the transaction`,
-      },
+      error: { message: 'The user canceled the transaction' },
     }
-    const eventScript = `
+    webViewRef.current?.injectJavaScript(`
       window.ethereum.responseReceiver(${JSON.stringify(response)});
-      true; // To ensure execution is finished
-    `
-    if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(eventScript)
-    }
+      true;
+    `)
   }
 
-  const handleMessage = async (event: WebViewMessageEvent) => {
-    const client = walletService.getCurrentWallet()
-    if (!client) {
-      // TODO: open the login screen
-      console.log('No client!')
-      setAddress('')
-      return
-    }
-    const message = event.nativeEvent.data // Get message from WebView
-    // Alert.alert("Message from WebView", message);
-    if (webViewRef.current) {
-      const request = JSON.parse(message)
-      console.log('Raw request', request)
-      if (request.method === 'request') {
-        try {
-          console.log(request)
-          let result
-          if (request.args.method === 'eth_requestAccounts' || request.args.method === 'eth_accounts') {
-            result = [client.account?.address]
-          } else if (request.args.method === 'eth_sendTransaction') {
-            const params = request.args.params[0]
-            currentTransaction.params = {
-              ...params,
-              account: client.account!,
-              gasLimit: params.gas,
-              gas: undefined,
-            }
-            currentTransaction.request = request
-            console.log('transactionParams', currentTransaction)
-            setModalVisible(true)
-            return
-          } else {
-            result = await client.request(request.args)
-          }
-          console.log('result', result)
-          const response = {
-            reqId: request.reqId,
-            result,
-          }
-          const eventScript = `
-            window.ethereum.responseReceiver(${JSON.stringify(response)});
-            true; // To ensure execution is finished
-          `
-          webViewRef.current.injectJavaScript(eventScript)
-        } catch (e) {
-          console.error(e)
-        }
-      } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
-        console.log('Register listener', request)
-        const result = [client.account?.address]
-        const response = {
-          eventName: request.eventName,
-          result,
-        }
-        const eventScript = `
-          window.ethereum.eventReceiver(${JSON.stringify(response)});
-          true; // To ensure execution is finished
-        `
-        webViewRef.current.injectJavaScript(eventScript)
-      }
-    }
-  }
-
-  const handleApplySettings = async (settings: Settings) => {
-    try {
-      if (webViewRef.current) {
-        const settingsScript = `
-          window.__deviceOrientation = {
-            enabled: true,
-            right: ${settings.right},
-            left: ${settings.left},
-            up: ${settings.up},
-            down: ${settings.down},
-          };
-          true;
-        `;
-        webViewRef.current.injectJavaScript(settingsScript);
-      }
-    } catch (error) {
-      console.error('Error applying settings:', error);
-    }
-  }
+  const gamepadPath = movementMode === 'tilt' ? 'doom-smooth-turn' : 'doom-with-arrows'
 
   return (
     <>
       <Stack.Screen options={{ headerTitle: 'Game', headerShown: false }} />
-      {/* TODO: MAKE IT WORK ON IOS */}
+
       <SettingsModal
-        visible={Platform.OS === "ios" ? false : isSettingsModalOpen}
+        visible={Platform.OS === 'ios' ? false : isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
+        onMovementModeChange={(mode) => setMovementMode(mode === 'tilt' ? 'tilt' : 'arrows')}
       />
-      {/* REMOVE LATER */}
-      <ThemedButton 
-        type="button" 
-        buttonText="Open settings" 
-        onPress={() => setIsSettingsModalOpen(true)} 
+
+      <ThemedButton
+        type="button"
+        buttonText="Open settings"
+        onPress={() => setIsSettingsModalOpen(true)}
       />
+
       <StatusBar hidden />
       <GestureHandlerRootView>
         <ThemedView style={styles.container}>
@@ -343,52 +284,37 @@ export default function FullScreen() {
           <WebView
             ref={webViewRef}
             source={{
-              // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-              // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html'
-              // uri: 'https://ipfs.io/ipfs/bafybeidiiw6eoysstullgnvxd6odnq2tvvypkvjhsdmznbbp2azardlloi/landscape-fullscreen.html',
-              uri: 'https://ipfs.io/ipfs/bafybeibbkim5jxd2pg3zojjopbt3kmklnrujo7cgiffsojx6gjco632gpu/landscape-fullscreen.html',
+              uri: `https://c5d4-2804-d41-e329-9600-b900-2aab-626f-447f.ngrok-free.app/${gamepadPath}`,
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}
             onLoadProgress={onLoadProgress}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
+            javaScriptEnabled
+            domStorageEnabled
             bounces={false}
             overScrollMode="never"
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent
+            onError={({ nativeEvent }) => {
               console.warn('WebView error: ', nativeEvent)
             }}
             injectedJavaScriptBeforeContentLoaded={injectedJS}
             injectedJavaScript={injectJS}
             onMessage={handleMessage}
-            webviewDebuggingEnabled={true}
+            webviewDebuggingEnabled
           />
           {isLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.tint} />}
           <Modal
             visible={modalVisible}
-            transparent={true}
-            animationType="slide" // Changed to slide for better UX
+            transparent
+            animationType="slide"
             onRequestClose={() => setModalVisible(false)}
           >
             <TouchableOpacity
               style={styles.modalContainer}
-              activeOpacity={1} // Prevents opacity flash
-              onPress={() => setModalVisible(false)} // Close on background press
+              activeOpacity={1}
+              onPress={() => setModalVisible(false)}
             >
-              <View
-                style={styles.modalContent}
-                onStartShouldSetResponder={() => true} // Prevents closing when pressing modal content
-              >
+              <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
                 <ThemedText style={styles.modalTitle}>Confirm Transaction</ThemedText>
                 <ThemedText style={styles.modalMessage}>Are you sure you want to send this transaction?</ThemedText>
                 <View style={styles.buttonContainer}>
@@ -411,7 +337,6 @@ export default function FullScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 0,
   },
   webview: {
     flex: 1,
@@ -433,23 +358,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker overlay for better contrast
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   modalContent: {
     backgroundColor: 'white',
     padding: 24,
     borderRadius: 16,
-    width: '85%', // More responsive width
-    maxWidth: 400, // Maximum width for larger screens
-    minWidth: 280, // Minimum width for smaller screens
+    width: '85%',
+    maxWidth: 400,
+    minWidth: 280,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 5, // Android shadow
+    elevation: 5,
   },
   modalTitle: {
     fontSize: 20,
