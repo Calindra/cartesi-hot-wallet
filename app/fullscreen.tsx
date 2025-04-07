@@ -346,9 +346,11 @@ export default function FullScreen() {
           {isLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.tint} />}
           <Modal
             visible={modalVisible}
-            transparent
+            transparent={false}
             animationType="slide"
             onRequestClose={() => setModalVisible(false)}
+            presentationStyle="pageSheet"
+
           >
             <TouchableOpacity
               style={styles.modalContainer}
