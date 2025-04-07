@@ -88,6 +88,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
+      supportedOrientations={['landscape', 'landscape-right']} // works=true
     >
       <View style={styles.modalContainer}>
         <ScrollView

@@ -9,7 +9,7 @@ import { walletService } from '@/src/services/WalletService'
 import { Settings } from '@/types/types'
 import * as NavigationBar from 'expo-navigation-bar'
 import * as SecureStore from 'expo-secure-store'
-import { Stack, useLocalSearchParams } from 'expo-router'
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import {
@@ -91,6 +91,7 @@ const injectedJS = `
 const currentTransaction: any = {}
 
 export default function FullScreen() {
+  const router = useRouter();
   const { gameURL, webviewURI } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
@@ -306,7 +307,7 @@ export default function FullScreen() {
       <Stack.Screen options={{ headerTitle: 'Game', headerShown: false }} />
 
       <SettingsModal
-        visible={Platform.OS === 'ios' ? false : isSettingsModalOpen}
+        visible={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
         onMovementModeChange={(mode) => setMovementMode(mode === 'tilt' ? 'tilt' : 'arrows')}
@@ -346,11 +347,10 @@ export default function FullScreen() {
           {isLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.tint} />}
           <Modal
             visible={modalVisible}
-            transparent={false}
+            transparent={true}
             animationType="slide"
             onRequestClose={() => setModalVisible(false)}
-            presentationStyle="pageSheet"
-
+            supportedOrientations={['landscape-right']} // works=true
           >
             <TouchableOpacity
               style={styles.modalContainer}
