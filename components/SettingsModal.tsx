@@ -11,6 +11,7 @@ import Slider from '@react-native-community/slider';
 import * as SecureStore from 'expo-secure-store';
 import { ThemedButton } from './ThemedButton';
 import { DeviceOrientation, getDefaultSettings, Settings } from '@/src/model/Settings';
+import { settingsService } from '@/src/services/SettingsService';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -31,39 +32,30 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   useEffect(() => {
     const loadSettings = async () => {
-      const storedSettings = await SecureStore.getItemAsync('deviceOrientationSettings');
-      const tiltSetting = await SecureStore.getItemAsync('movementMode');
-      if (storedSettings) {
-        const stored = JSON.parse(storedSettings)
-        if (!stored.deviceOrientation) {
-          stored.deviceOrientation = getDefaultSettings().deviceOrientation;
-        }
-        if (!stored.movementMode) {
-          stored.movementMode = getDefaultSettings().movementMode;
-        }
-        setSettings(stored);
-      }
-      if (tiltSetting !== null) {
-        const tilt = tiltSetting === 'tilt';
-        setUseTilt(tilt);
-        onMovementModeChange?.(tilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
-      }
+      const storedSettings = await settingsService.loadSettings();
+      setSettings(storedSettings);
+      const tilt = storedSettings.movementMode === 'tilt'
+      setUseTilt(tilt);
+      onMovementModeChange?.(tilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
     };
     loadSettings();
   }, []);
 
   const handleSliderChange = async (key: keyof DeviceOrientation, userValue: number) => {
     const realValue = userValue;
-    const newSettings = { ...settings, deviceOrientation: {...settings.deviceOrientation, [key]: realValue} };
+    const newSettings = { ...settings, deviceOrientation: { ...settings.deviceOrientation, [key]: realValue } };
     setSettings(newSettings);
     onSettingsChange?.(newSettings);
-    // await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
+    await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
   };
 
-  const handleToggle = async (value: boolean) => {
-    setUseTilt(value);
-    await SecureStore.setItemAsync('movementMode', value ? 'tilt' : 'arrows');
-    onMovementModeChange?.(value ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
+  const handleToggle = async (newUseTilt: boolean) => {
+    setUseTilt(newUseTilt);
+    const newSettings = { ...settings };
+    newSettings.movementMode = newUseTilt ? 'tilt' : 'arrow';
+    await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
+    onMovementModeChange?.(newUseTilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
+    console.log(`saved`, JSON.stringify(newSettings));
   };
 
   const renderSlider = (key: keyof DeviceOrientation, label: string, settings: Settings) => (

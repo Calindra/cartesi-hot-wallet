@@ -26,6 +26,7 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import { Settings } from '@/src/model/Settings'
+import { settingsService } from '@/src/services/SettingsService'
 
 const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/landscape-fullscreen.html"
 
@@ -92,7 +93,7 @@ const currentTransaction: any = {}
 
 export default function FullScreen() {
   const router = useRouter();
-  const { gameURL, webviewURI } = useLocalSearchParams()
+  const { gameURL, webviewURI, tiltGamepad, arrowGamepad } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -103,8 +104,6 @@ export default function FullScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
-
-  const [movementMode, setMovementMode] = useState<'arrows' | 'tilt'>('arrows')
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -121,16 +120,19 @@ export default function FullScreen() {
 
   useEffect(() => {
     const initialize = async () => {
-      await changeOrientation()
+      await changeOrientation();
 
-      const storedMode = await SecureStore.getItemAsync('movementMode')
-      setMovementMode(storedMode === 'tilt' ? 'tilt' : 'arrows')
-
-      if (webViewRef.current && Platform.OS === 'android') {
-        NavigationBar.setVisibilityAsync('hidden')
+      const storedSettings = await settingsService.loadSettings();
+      handleApplySettings(storedSettings);
+      if (storedSettings.movementMode === 'tilt' && tiltGamepad) {
+        onMovementModeChange(tiltGamepad as string)
+      } else if (storedSettings.movementMode === 'arrow' && arrowGamepad) {
+        onMovementModeChange(arrowGamepad as string)
       }
     }
-
+    if (webViewRef.current && Platform.OS === 'android') {
+      NavigationBar.setVisibilityAsync('hidden')
+    }
     initialize()
   }, [gameURL])
 

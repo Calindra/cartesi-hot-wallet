@@ -50,6 +50,8 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
                 params: {
                   gameURL: item.gameURL,
                   webviewURI: item.webviewURI,
+                  arrowGamepad: item.arrowGamepad,
+                  tiltGamepad: item.tiltGamepad,
                 },
               }}
               style={styles.columnContainer}
