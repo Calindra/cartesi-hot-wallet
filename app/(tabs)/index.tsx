@@ -4,8 +4,9 @@ import { IconSymbol } from '@/components/ui/IconSymbol'
 import { GameData } from '@/src/model/GameData'
 import { usePathname } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
+import * as NavigationBar from 'expo-navigation-bar'
 import React, { useEffect, useState } from 'react'
-import { Dimensions, ScrollView, StyleSheet } from 'react-native'
+import { Dimensions, Platform, ScrollView, StyleSheet } from 'react-native'
 
 
 // TODO: could come from an API
@@ -84,6 +85,9 @@ export default function Home() {
     // Initial orientation lock
     if (pathname === '/') {
       changeOrientation()
+      if (Platform.OS === 'android') {
+        NavigationBar.setVisibilityAsync('visible')
+      }
     }
 
     // Cleanup listener
