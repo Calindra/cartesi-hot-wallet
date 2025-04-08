@@ -27,8 +27,10 @@ const gameData: GameData[] = [
     gameURL: 'https://ipfs.io/ipfs/bafybeicrcve7x2nzwewuwy4ixdgddfvtif4jlzingbejydw5ekfawk2ycu/721f735bbca3',
     webview: false,
     // webviewURI: 'https://0f82-200-152-100-218.ngrok-free.app/landscape-fullscreen',
-    webviewURI: 'https://f60a-2804-14d-5ce1-9cc7-dd4b-b5ed-8b20-da00.ngrok-free.app/doom-with-arrows.html',
-    // webviewURI: 'https://ipfs.io/ipfs/bafybeicr2oku3satd6w6aumsascx7eglum3xk3qc4u4ocm3xtwh4zgjzq4/doom-with-arrows.html',
+    // webviewURI: 'https://f60a-2804-14d-5ce1-9cc7-dd4b-b5ed-8b20-da00.ngrok-free.app/doom-with-arrows.html',
+    webviewURI: 'https://ipfs.io/ipfs/bafybeibw4uavblwc3ikmpk6rghtlhxj6sg43ej753zzaxd3gcslzwn5g7q/doom-with-arrows.html',
+    tiltGamepad: 'doom-smooth-turn.html',
+    arrowGamepad: 'doom-with-arrows.html',
   },
   {
     id: '3',
