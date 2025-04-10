@@ -7,12 +7,14 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native'
+import ShortenedPrivacyPolicy from './PrivacyPolicy/ShortennedPrivacyPolicy'
 
 const CreateAccount = ({ isVisible, onClose, onSave }) => {
   const [email, setEmail] = useState('')
@@ -22,6 +24,8 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [privacyPolicyAccepted, setPrivacyPolicyAccepted] = useState(false)
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
   const buttonScale = new Animated.Value(1)
 
@@ -61,6 +65,7 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
     setConfirmPassword('')
     setError('')
     setEmail('')
+    setPrivacyPolicyAccepted(false)
     onClose()
   }
 
@@ -75,11 +80,15 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
       setError('Passwords do not match')
       return
     }
+    if (!privacyPolicyAccepted) {
+      setError('You must accept the Privacy Policy to continue')
+      return
+    }
 
     setIsLoading(true)
     try {
       // Simulated delay for demo purposes
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // await new Promise((resolve) => setTimeout(resolve, 1000))
       if (onSave) {
         await onSave(password)
       }
@@ -108,103 +117,139 @@ const CreateAccount = ({ isVisible, onClose, onSave }) => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.card}>
-            <Feather name="lock" size={32} color="#4a90e2" style={styles.lockIcon} />
-            <ThemedText style={styles.title}>Create Account</ThemedText>
-            <ThemedText style={styles.subtitle}>Choose a strong password to secure your account</ThemedText>
+          <ScrollView>
+            <View style={styles.card}>
+              <Feather name="lock" size={32} color="#4a90e2" style={styles.lockIcon} />
+              <ThemedText style={styles.title}>Create Account</ThemedText>
+              <ThemedText style={styles.subtitle}>Choose a strong password to secure your account</ThemedText>
 
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="mail" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#999"
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="lock" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
-                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            {password && (
-              <View style={styles.strengthContainer}>
-                <View style={[styles.strengthBar, { backgroundColor: strength.color }]} />
-                <ThemedText style={[styles.strengthText, { color: strength.color }]}>{strength.text}</ThemedText>
-              </View>
-            )}
-
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="lock" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm password"
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Feather name="x-circle" size={16} color="#ff4d4d" />
-                <ThemedText style={styles.error}>{error}</ThemedText>
-              </View>
-            ) : null}
-
-            <View style={styles.requirementsList}>
-              <ThemedText style={styles.requirementsTitle}>Password Requirements:</ThemedText>
-              <View style={styles.requirementItem}>
-                <Feather name="check-circle" size={16} color={password.length >= 6 ? '#2ecc71' : '#ccc'} />
-                <ThemedText style={styles.requirementText}>At least 6 characters</ThemedText>
-              </View>
-              <View style={styles.requirementItem}>
-                <Feather name="check-circle" size={16} color={/\d/.test(password) ? '#2ecc71' : '#ccc'} />
-                <ThemedText style={styles.requirementText}>Contains a number</ThemedText>
-              </View>
-              <View style={styles.requirementItem}>
-                <Feather
-                  name="check-circle"
-                  size={16}
-                  color={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '#2ecc71' : '#ccc'}
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="mail" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholderTextColor="#999"
                 />
-                <ThemedText style={styles.requirementText}>Contains a special character</ThemedText>
               </View>
-            </View>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="lock" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter password"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholderTextColor="#999"
+                />
+                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                  <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={savePassword}
-                disabled={isLoading}
-              >
-                <ThemedText style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save Password'}</ThemedText>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
+              {password && (
+                <View style={styles.strengthContainer}>
+                  <View style={[styles.strengthBar, { backgroundColor: strength.color }]} />
+                  <ThemedText style={[styles.strengthText, { color: strength.color }]}>{strength.text}</ThemedText>
+                </View>
+              )}
+
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="lock" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm password"
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholderTextColor="#999"
+                />
+                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Feather name="x-circle" size={16} color="#ff4d4d" />
+                  <ThemedText style={styles.error}>{error}</ThemedText>
+                </View>
+              ) : null}
+
+              <View style={styles.requirementsList}>
+                <ThemedText style={styles.requirementsTitle}>Password Requirements:</ThemedText>
+                <View style={styles.requirementItem}>
+                  <Feather name="check-circle" size={16} color={password.length >= 6 ? '#2ecc71' : '#ccc'} />
+                  <ThemedText style={styles.requirementText}>At least 6 characters</ThemedText>
+                </View>
+                <View style={styles.requirementItem}>
+                  <Feather name="check-circle" size={16} color={/\d/.test(password) ? '#2ecc71' : '#ccc'} />
+                  <ThemedText style={styles.requirementText}>Contains a number</ThemedText>
+                </View>
+                <View style={styles.requirementItem}>
+                  <Feather
+                    name="check-circle"
+                    size={16}
+                    color={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? '#2ecc71' : '#ccc'}
+                  />
+                  <ThemedText style={styles.requirementText}>Contains a special character</ThemedText>
+                </View>
+              </View>
+
+              {/* Privacy Policy Checkbox */}
+              <View style={styles.privacyContainer}>
+                <TouchableOpacity 
+                  style={styles.checkbox} 
+                  onPress={() => setPrivacyPolicyAccepted(!privacyPolicyAccepted)}
+                >
+                  {privacyPolicyAccepted ? (
+                    <Feather name="check-square" size={20} color="#4a90e2" />
+                  ) : (
+                    <Feather name="square" size={20} color="#666" />
+                  )}
+                </TouchableOpacity>
+                <View style={styles.privacyTextContainer}>
+                  <ThemedText style={styles.privacyText}>
+                    I accept the{' '}
+                    <ThemedText 
+                      style={styles.privacyLink}
+                      onPress={() => setShowPrivacyPolicy(true)}
+                    >
+                      Privacy Policy
+                    </ThemedText>
+                  </ThemedText>
+                </View>
+              </View>
+
+              <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+                <TouchableOpacity
+                  style={[
+                    styles.button, 
+                    (isLoading || !privacyPolicyAccepted) && styles.buttonDisabled
+                  ]}
+                  onPress={savePassword}
+                  disabled={isLoading || !privacyPolicyAccepted}
+                >
+                  <ThemedText style={styles.buttonText}>{isLoading ? 'Saving...' : 'Save Password'}</ThemedText>
+                </TouchableOpacity>
+              </Animated.View>
+            </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Importando o componente de Política de Privacidade separado */}
+      <ShortenedPrivacyPolicy 
+        isVisible={showPrivacyPolicy} 
+        onClose={() => setShowPrivacyPolicy(false)} 
+      />
     </Modal>
   )
 }
@@ -341,6 +386,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Privacy Policy Styles
+  privacyContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 24,
+  },
+  checkbox: {
+    marginRight: 8,
+    padding: 2,
+  },
+  privacyTextContainer: {
+    flex: 1,
+  },
+  privacyText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  privacyLink: {
+    color: '#4a90e2',
+    textDecorationLine: 'underline',
   },
 })
 

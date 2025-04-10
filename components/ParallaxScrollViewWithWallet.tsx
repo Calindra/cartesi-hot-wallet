@@ -11,7 +11,6 @@ import CreateAccount from './CreateAccount'
 import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'
 import ParallaxScrollView, { ParallaxScrollViewProps } from './ParallaxScrollView'
-import PrivacyPolicy from './PrivacyPolicy/PrivacyPolicy'
 import SettingsModal from './SettingsModal'
 import { WalletHeader } from './WalletHeader/WalletHeader'
 
@@ -38,13 +37,12 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
   showWallet = true,
   ...props
 }) => {
-  const [showCreateAccount, setShowCreateAccount] = useState(false)
+  const [showCreateAccount, setShowCreateAccount] = useState(true)
   const [showLogin, setShowLogin] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
   const [gamepadURL, setGamepadURL] = useState('doom-with-arrows.html')
-  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false) // starts as false
   const { setAddress } = useContext(LoginContext)
   const headerHeight = Platform.OS === 'ios' ? 107 : (StatusBar.currentHeight || 0) + 60
 
@@ -64,19 +62,6 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
     const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
     setAddress(client.account.address)
     return
-  }
-
-  useEffect(() => {
-    const checkAgreement = async () => {
-      const agreed = await getPrivacyPolicyAgreement()
-      setShowPrivacyPolicy(!agreed) // Show only if not agreed
-    }
-    checkAgreement()
-  }, [])
-
-  const handleClosePrivacyPolicy = async () => {
-    await setPrivacyPolicyAgreement() // Save agreement
-    setShowPrivacyPolicy(false)
   }
 
   const handleApplySettings = async (settings: Settings) => {
