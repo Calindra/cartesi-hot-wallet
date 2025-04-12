@@ -1,5 +1,4 @@
 import SettingsModal from '@/components/SettingsModal'
-import { ThemedButton } from '@/components/ThemedButton'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { Colors } from '@/constants/Colors'
@@ -7,8 +6,7 @@ import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { walletService } from '@/src/services/WalletService'
 import * as NavigationBar from 'expo-navigation-bar'
-import * as SecureStore from 'expo-secure-store'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { Stack, useLocalSearchParams } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import {
@@ -28,7 +26,7 @@ import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import { Settings } from '@/src/model/Settings'
 import { settingsService } from '@/src/services/SettingsService'
 
-const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiab3lenboyilbcnfnxncswhzmhvrzwt325zv2x2ee6y6uvuxmqxsa/landscape-fullscreen.html"
+const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiardcuzfsfkecblcx4p5sueisfrgnvtl6oovqzffeiel5agbv4laa/landscape-fullscreen.html"
 
 //TODO:
 const { height, width } = Dimensions.get('window')
@@ -92,7 +90,6 @@ const injectedJS = `
 const currentTransaction: any = {}
 
 export default function FullScreen() {
-  const router = useRouter();
   const { gameURL, webviewURI, tiltGamepad, arrowGamepad } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
@@ -124,11 +121,7 @@ export default function FullScreen() {
 
       const storedSettings = await settingsService.loadSettings();
       handleApplySettings(storedSettings);
-      if (storedSettings.movementMode === 'tilt' && tiltGamepad) {
-        onMovementModeChange(tiltGamepad as string)
-      } else if (storedSettings.movementMode === 'arrow' && arrowGamepad) {
-        onMovementModeChange(arrowGamepad as string)
-      }
+      handleMovementModeChange(storedSettings.movementMode);
     }
     if (webViewRef.current && Platform.OS === 'android') {
       NavigationBar.setVisibilityAsync('hidden')
@@ -161,14 +154,22 @@ export default function FullScreen() {
       />
     ) : null
 
-  const onMovementModeChange = (url: string) => {
+  const handleMovementModeChange = (movementMode: string) => {
+    if (movementMode === 'tilt' && tiltGamepad) {
+      navigateToGamepad(tiltGamepad as string)
+    } else if (movementMode === 'arrow' && arrowGamepad) {
+      navigateToGamepad(arrowGamepad as string)
+    }
+  }
+
+  const navigateToGamepad = (gamepadFileName: string) => {
     let aux = (webviewURI as string).split('/');
     aux.pop();
-    url = `${aux.join('/')}/${url}`;
-    console.log('onMovementModeChange', url)
+    gamepadFileName = `${aux.join('/')}/${gamepadFileName}`;
+    console.log('navigateToGamepad', gamepadFileName)
     if (webViewRef.current) {
       const settingsScript = `
-        window.location.href = ${JSON.stringify(url)};
+        window.location.href = ${JSON.stringify(gamepadFileName)};
         true;
       `
       webViewRef.current.injectJavaScript(settingsScript)
@@ -218,6 +219,7 @@ export default function FullScreen() {
       webViewRef.current.injectJavaScript(eventScript)
     }
   }
+
   const handleTransaction = async () => {
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
@@ -268,6 +270,8 @@ export default function FullScreen() {
   const handleMessage = async (event: WebViewMessageEvent) => {
     const client = walletService.getCurrentWallet()
     if (!client) {
+      // TODO: open the login screen
+      console.log('No client!')
       setAddress('')
       return
     }
@@ -338,7 +342,7 @@ export default function FullScreen() {
         visible={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
-        onMovementModeChange={onMovementModeChange}
+        onMovementModeChange={handleMovementModeChange}
       />
 
       <StatusBar hidden />
