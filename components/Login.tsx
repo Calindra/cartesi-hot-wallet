@@ -1,5 +1,6 @@
 import LoginContext from '@/hooks/loginContext'
 import { Feather } from '@expo/vector-icons'
+import { useNavigation, useRouter } from 'expo-router'
 import React, { useContext, useState } from 'react'
 import {
   Animated,
@@ -26,7 +27,6 @@ interface LoginModalProps {
   isVisible: boolean
   onClose: () => void
   onLogin: (credentials: LoginCredentials) => Promise<void>
-  setShowCreateAccount: (value: boolean) => void
 }
 
 interface Styles {
@@ -55,12 +55,15 @@ interface Styles {
   signupLink: TextStyle
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, setShowCreateAccount }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
   const { email, setEmail } = useContext(LoginContext)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
+
+  // Use expo-router for navigation
+  const router = useRouter()
 
   const buttonScale = new Animated.Value(1)
 
@@ -80,10 +83,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
   }
 
   const handleClose = (): void => {
-    // setEmail('')
     setPassword('')
     setError('')
     onClose()
+  }
+  const handleSignUp = (): void => {
+    handleClose() // close the login modal first
+    router.push('/createAccount') // navigate to hidden screen in tabs
   }
 
   const validateEmail = (email: string): boolean => {
@@ -167,6 +173,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
                 value={email}
                 onChangeText={setEmail}
                 placeholderTextColor="#999"
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
 
@@ -206,14 +214,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
 
             <View style={styles.signupContainer}>
               <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
-              <TouchableOpacity
-                onPress={() => setShowCreateAccount(true)}
-              >
+              <TouchableOpacity onPress={handleSignUp}>
                 <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
-              </TouchableOpacity>
-            </View>
-
-            {/* <View style={styles.signupContainer}>
+                {/* <View style={styles.signupContainer}>
               <ThemedText style={styles.signupText}>
                 Don't have an account? Remember, use a strong UNIQUE password to create one.
               </ThemedText>
@@ -222,6 +225,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
               </ThemedText>
               <ThemedText style={styles.signupText}>There is no password recovery</ThemedText>
             </View> */}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -301,6 +306,7 @@ const styles = StyleSheet.create<Styles>({
   eyeIcon: {
     position: 'absolute',
     right: 16,
+    top: 18,
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
@@ -339,15 +345,14 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '600',
   },
   signupContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 24,
   },
   signupText: {
-    color: '#000',
+    color: '#666',
     fontSize: 14,
-    textAlign: 'center',
   },
   signupLink: {
     color: '#4a90e2',

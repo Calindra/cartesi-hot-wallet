@@ -6,8 +6,8 @@ import {
   View,
 } from 'react-native'
 import * as SecureStore from 'expo-secure-store'
+import CreateAccountPage from './CreateAccount' // rename for clarity if needed
 
-import CreateAccount from './CreateAccount'
 import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'
 import ParallaxScrollView, { ParallaxScrollViewProps } from './ParallaxScrollView'
@@ -37,7 +37,7 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
   showWallet = true,
   ...props
 }) => {
-  const [showCreateAccount, setShowCreateAccount] = useState(true)
+  const [showCreateAccount, setShowCreateAccount] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -87,7 +87,7 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             isVisible={showLogin}
             onClose={() => setShowLogin(false)}
             onLogin={handleLogin}
-            setShowCreateAccount={setShowCreateAccount}
+
           />
           <OnboardingModal
             isVisible={showOnboarding}
@@ -99,11 +99,9 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             onSettingsChange={handleApplySettings}
             onMovementModeChange={(url) => setGamepadURL(url)}
           />
-          <CreateAccount
-            isVisible={showCreateAccount}
-            onClose={() => setShowCreateAccount(false)}
-            onSave={() => { }}
-          />
+
+
+
         </ParallaxScrollView>
 
         {showWallet && (

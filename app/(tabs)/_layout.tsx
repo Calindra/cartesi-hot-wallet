@@ -24,7 +24,8 @@ export default function TabLayout() {
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -44,9 +45,13 @@ export default function TabLayout() {
         options={{
           title: 'Rives',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gamecontroller.fill" color={color} />,
-
         }}
       />
+      <Tabs.Screen
+        name="createAccount"
+        options={{ href: null }} // or tabBarButton: () => null
+      />
+
     </Tabs>
   );
 }
