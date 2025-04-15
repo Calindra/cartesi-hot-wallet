@@ -21,7 +21,10 @@ const ShortenedPrivacyPolicy = ({
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={styles.policyScrollView}>
+                    <ScrollView
+                        style={styles.policyScrollView}
+                        contentContainerStyle={styles.policyScrollViewContent}
+                    >
                         <ThemedText style={styles.policyText}>
                             This Privacy Policy describes how your personal information is collected, used, and shared when you use our mobile application ("App"), provided by [INSERT COMPANY NAME].
                         </ThemedText>
@@ -108,7 +111,7 @@ const styles = StyleSheet.create({
     policyModalContent: {
         backgroundColor: '#fff',
         borderRadius: 16,
-        maxHeight: '80%',
+        maxHeight: '90%',
         padding: 0,
     },
     policyHeaderContainer: {
@@ -128,12 +131,17 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     policyScrollView: {
-        padding: 16,
+        paddingHorizontal: 16,
+    },
+    policyScrollViewContent: {
+        paddingVertical: 16,
+        paddingBottom: 32, // Add extra padding at the bottom
     },
     policyText: {
         fontSize: 14,
         color: '#333',
         lineHeight: 20,
+        marginBottom: 16, // Add space between paragraphs
     },
 });
 

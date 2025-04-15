@@ -89,7 +89,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   }
   const handleSignUp = (): void => {
     handleClose() // close the login modal first
-    router.push('/createAccount') // navigate to hidden screen in tabs
+    router.push('/(fullscreen)/createAccount')
+
   }
 
   const validateEmail = (email: string): boolean => {
@@ -98,11 +99,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
   const validatePassword = (password: string): { passWordStrengthScore: number; timeToCrack: string | number } => {
     const { score, calc_time, crack_times_seconds } = zxcvbn(password)
-    console.log('validatePassword', {
-      score,
-      calc_time,
-      timetoCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second,
-    })
+
     return { passWordStrengthScore: score, timeToCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second }
   }
 
