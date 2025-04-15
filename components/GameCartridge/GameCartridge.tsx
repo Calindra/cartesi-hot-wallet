@@ -1,6 +1,12 @@
-import React from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import React, { useState } from 'react'
+import { Image, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native'
 import { ThemedText } from '../ThemedText'
+import { Feather } from '@expo/vector-icons'
+
+import { Colors } from '@/constants/Colors'
+import { Modal, Text } from 'react-native'
+import LeaderboardModal from '../LeaderboardModal'
+
 
 interface GameCardProps {
   imageUrl: string
@@ -12,11 +18,22 @@ const cartridgeBackground = require('../../assets/images/cartridge.png') // Make
 const rivesLogo = require('../../assets/images/logo-rives.png')
 
 const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Cartesi Foundation' }) => {
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const colorScheme = useColorScheme()
+  const colors = Colors[colorScheme ?? 'light']
+
+  const toggleDropdown = () => setShowDropdown(prev => !prev)
+
   return (
+
     <View style={styles.cartridgeContainer}>
+      {/* Background */}
       <View style={styles.backgroundContainer}>
         <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
       </View>
+
+      {/* Main content */}
       <View style={styles.contentContainer}>
         <Image source={rivesLogo} style={styles.rivesLogo} />
         <View style={styles.imageContainer}>
@@ -35,9 +52,53 @@ const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Car
           </ThemedText>
         </View>
       </View>
+
+      <View>
+        <TouchableOpacity style={styles.settingsButton} onPress={toggleDropdown}>
+          <Feather name="settings" size={14} color={colors.text} />
+        </TouchableOpacity>
+
+
+        <Modal
+          visible={showDropdown}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowDropdown(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{title}</Text>
+
+              {title === 'Free Doom' &&
+                <TouchableOpacity
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setShowDropdown(false)
+                    setShowLeaderboard(true)
+                  }}
+                >
+                  <ThemedText style={styles.dropdownText}>Leaderboard</ThemedText>
+                </TouchableOpacity>
+              }
+              <TouchableOpacity style={styles.dropdownItem} onPress={() => console.log('Controls')}>
+                <ThemedText style={styles.dropdownText}>Controls</ThemedText>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => setShowDropdown(false)}>
+                <ThemedText style={{ marginTop: 16, color: '#E44' }}>Close</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        <LeaderboardModal
+          visible={showLeaderboard}
+          onClose={() => setShowLeaderboard(false)}
+        />
+      </View>
     </View>
   )
 }
+
 
 const styles = StyleSheet.create({
   cartridgeContainer: {
@@ -91,6 +152,60 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 14,
   },
+  settingsButton: {
+    marginLeft: 16,
+    padding: 15, // increases touch area
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  },
+
+  dropdown: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    elevation: 5,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    zIndex: 10,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderRadius: 10,
+    width: 250,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 8,
+    marginVertical: 4,
+    alignItems: 'center',
+  },
+
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+  }
+
+
 })
 
 export default GameCartridge
