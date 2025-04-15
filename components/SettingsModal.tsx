@@ -36,7 +36,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       setSettings(storedSettings);
       const tilt = storedSettings.movementMode === 'tilt'
       setUseTilt(tilt);
-      onMovementModeChange?.(tilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
+      onMovementModeChange?.(storedSettings.movementMode);
     };
     loadSettings();
   }, []);
@@ -54,7 +54,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     const newSettings = { ...settings };
     newSettings.movementMode = newUseTilt ? 'tilt' : 'arrow';
     await SecureStore.setItemAsync('deviceOrientationSettings', JSON.stringify(newSettings));
-    onMovementModeChange?.(newUseTilt ? 'doom-smooth-turn.html' : 'doom-with-arrows.html');
+    onMovementModeChange?.(newSettings.movementMode);
     console.log(`saved`, JSON.stringify(newSettings));
   };
 

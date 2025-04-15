@@ -1,8 +1,11 @@
+import SettingsModal from '@/components/SettingsModal'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
 import { Colors } from '@/constants/Colors'
 import LoginContext from '@/hooks/loginContext'
 import { useColorScheme } from '@/hooks/useColorScheme'
+import { Settings } from '@/src/model/Settings'
+import { settingsService } from '@/src/services/SettingsService'
 import { walletService } from '@/src/services/WalletService'
 import { useLocalSearchParams } from 'expo-router'
 import React, { useContext, useEffect, useRef, useState } from 'react'
@@ -20,6 +23,8 @@ import {
 } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
+
+const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiardcuzfsfkecblcx4p5sueisfrgnvtl6oovqzffeiel5agbv4laa/landscape-fullscreen.html"
 
 //todo: ESSA É A ABA RIVES NO BORUMBÁ
 const { height, width } = Dimensions.get('window')
@@ -95,7 +100,7 @@ const injectedJS = `
 const currentTransaction: any = {}
 
 export default function WebViewScreen() {
-  const { gameURL } = useLocalSearchParams()
+  const { gameURL, webviewURI, tiltGamepad, arrowGamepad } = useLocalSearchParams()
 
   const webViewRef = useRef<WebView>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -105,23 +110,26 @@ export default function WebViewScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [calculatedURI, setCalculatedURL] = useState('')
 
   const injectJS = `
-  document.body.style.overflow = 'hidden';
-  rivemuUploadCartridge("${gameURL}" || "https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs");
-  true; // To ensure execution is finished
+    document.body.style.overflow = 'hidden';
+    rivemuUploadCartridge("${gameURL}")
+      .then(() => {
+        resizeCanvas();
+      });
+    true;
   `
 
   useEffect(() => {
-    if (webViewRef.current) {
-      const changeGameJS = `
-        document.body.style.overflow = 'hidden';
-        rivemuUploadCartridge("${gameURL}");
-        true;
-      `
-      webViewRef.current.injectJavaScript(changeGameJS)
+    const initialize = async () => {
+      const storedSettings = await settingsService.loadSettings();
+      handleApplySettings(storedSettings);
+      handleMovementModeChange(storedSettings.movementMode);
     }
-  }, [gameURL, webViewRef])
+    initialize()
+  }, [gameURL])
 
   const onLoadProgress = ({ nativeEvent }: { nativeEvent: { progress: number } }) => {
     setProgress(nativeEvent.progress)
@@ -149,27 +157,53 @@ export default function WebViewScreen() {
     ) : null
   }
 
-  const handleTransaction = async () => {
-    setModalVisible(false)
-    const client = walletService.getCurrentWallet()
-    if (!client) {
-      // TODO: open the login screen
-      return
+  const handleMovementModeChange = (movementMode: string) => {
+    if (movementMode === 'tilt' && tiltGamepad) {
+      navigateToGamepad(tiltGamepad as string)
+    } else if (movementMode === 'arrow' && arrowGamepad) {
+      navigateToGamepad(arrowGamepad as string)
     }
-    const txHash = await client.sendTransaction(currentTransaction.params)
-    console.log('Transaction Hash:', txHash)
-    const result = txHash
-    console.log('result', result)
-    const response = {
-      reqId: currentTransaction.request.reqId,
-      result,
-    }
-    const eventScript = `
-      window.ethereum.responseReceiver(${JSON.stringify(response)});
-      true; // To ensure execution is finished
-    `
+  }
+
+  const navigateToGamepad = (gamepadFileName: string) => {
+    let aux = (webviewURI as string).split('/');
+    aux.pop();
+    gamepadFileName = `${aux.join('/')}/${gamepadFileName}`;
+    console.log('navigateToGamepad', gamepadFileName)
+    setCalculatedURL(gamepadFileName)
     if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(eventScript)
+      const settingsScript = `
+        window.location.href = ${JSON.stringify(gamepadFileName)};
+        true;
+      `
+      webViewRef.current.injectJavaScript(settingsScript)
+    }
+  }
+
+  const handleApplySettings = async (settings: Settings) => {
+    if (webViewRef.current) {
+      const leftRight = settings.deviceOrientation.leftRight;
+      const LR = 30;
+      const lr = (1 - (leftRight / 200)) * LR;
+      const left = -lr;
+      const right = lr;
+      const upDown = settings.deviceOrientation.upDown;
+      const ud = (1 - (upDown / 200)) * LR;
+      const upDownAngle = -settings.deviceOrientation.upDownAngle;
+      const up = upDownAngle + ud;
+      const down = upDownAngle - ud;
+      console.log({ up, down, upDown, upDownAngle })
+      const settingsScript = `
+          window.__deviceOrientation = {
+            enabled: true,
+            right: ${right},
+            left: ${left},
+            up: ${up},
+            down: ${down},
+          };
+          true;
+        `
+      webViewRef.current.injectJavaScript(settingsScript)
     }
   }
 
@@ -190,6 +224,53 @@ export default function WebViewScreen() {
     }
   }
 
+  const handleTransaction = async () => {
+    setModalVisible(false)
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      // TODO: open the login screen
+      console.log('TODO: open the login screen.')
+      return
+    }
+    try {
+      console.log('Sending transaction...')
+      const txHash = await client.sendTransaction(currentTransaction.params)
+      console.log('Transaction Hash:', txHash)
+      const result = txHash
+      console.log('result', result)
+      const response = {
+        reqId: currentTransaction.request.reqId,
+        result,
+      }
+      const eventScript = `
+          window.ethereum.responseReceiver(${JSON.stringify(response)});
+          true; // To ensure execution is finished
+        `
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(eventScript)
+      }
+    } catch (e) {
+      console.error(`Error sending transaction`, e);
+      if (e instanceof Error) {
+        const response = {
+          reqId: currentTransaction.request.reqId,
+          result: {
+            error: {
+              message: e.message,
+            }
+          },
+        };
+        const eventScript = `
+            window.ethereum.responseReceiver(${JSON.stringify(response)});
+            true; // To ensure execution is finished
+          `
+        if (webViewRef.current) {
+          webViewRef.current.injectJavaScript(eventScript)
+        }
+      }
+    }
+  }
+
   const handleMessage = async (event: WebViewMessageEvent) => {
     const client = walletService.getCurrentWallet()
     if (!client) {
@@ -199,6 +280,10 @@ export default function WebViewScreen() {
       return
     }
     const message = event.nativeEvent.data // Get message from WebView
+    if (message === 'openSettings') {
+      setIsSettingsModalOpen(true)
+      return
+    }
     // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
       const request = JSON.parse(message)
@@ -252,24 +337,21 @@ export default function WebViewScreen() {
       }
     }
   }
-
+  console.log(`webview url = ${(webviewURI as string) || DEFAULT_GAME_PAGE}`)
   return (
     <GestureHandlerRootView>
+      <SettingsModal
+        visible={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onSettingsChange={handleApplySettings}
+        onMovementModeChange={handleMovementModeChange}
+      />
       <ThemedView style={styles.container}>
         <ProgressBar />
         <WebView
           ref={webViewRef}
           source={{
-            // uri: 'https://dapp-coprocessor-frontend.vercel.app/',
-            // uri: 'https://ipfs.io/ipfs/bafybeiaw6ei6hn6ntbqj55z2vg6h3nal4fytmytld55py6fupgtpd2jwg4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeienj675xszfyjftik45ixba66mo5hy6bxp44fmamrrf6inbnhdoru/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeib6kwururikmw7o6ktopa7gk5hwtbw7clnqrfles6athxptukvml4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeifyokmwtszcl3mubveqe7guc63h35a7xn2ygcifxw46wqfrhvaq24/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeigpd45klqkhxws3q33bhahfvkwnbmyltxtzbjjjzlnvsho4xc3f7i/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeicpd2hanzolpo2pywggkuv5frxikf4zl7lsqupfmml4trjnmjmly4/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeibldkyjrrw6wuaeiihwt5dez7g5mlxzrm7uip2o6wpxwfrquwgabe/gamepad.html'
-            // uri: 'https://ipfs.io/ipfs/bafybeifw7emfguwfcg7pabxjatcfs4ds6r45odz2wkbwpizsr2i26a76gu/gamepad.html'
-            uri: 'https://ipfs.io/ipfs/bafybeick7wjxbris3bzia624z6a3zzjhihpfpr6hepvahm4nw3tyw75lfa/gamepad.html',
+            uri: calculatedURI || (webviewURI as string) || DEFAULT_GAME_PAGE,
           }}
           style={styles.webview}
           onLoadStart={() => setIsLoading(true)}
