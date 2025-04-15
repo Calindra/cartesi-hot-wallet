@@ -25,6 +25,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import { Settings } from '@/src/model/Settings'
 import { settingsService } from '@/src/services/SettingsService'
+import LoginModal from '@/components/Login'
 
 const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiardcuzfsfkecblcx4p5sueisfrgnvtl6oovqzffeiel5agbv4laa/landscape-fullscreen.html"
 
@@ -102,6 +103,8 @@ export default function FullScreen() {
   const { setAddress } = useContext(LoginContext)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [calculatedURI, setCalculatedURL] = useState('')
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -111,6 +114,23 @@ export default function FullScreen() {
       });
     true;
   `
+
+  const requireAuthentication = (action: () => void) => {
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      setPendingAction(() => action)
+      setIsLoginModalOpen(true)
+      return false
+    }
+    return true
+  }
+
+  const handleLoginSuccess = async () => {
+    if (pendingAction) {
+      pendingAction()
+      setPendingAction(null)
+    }
+  }
 
   const changeOrientation = async () => {
     await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT)
@@ -223,10 +243,11 @@ export default function FullScreen() {
   }
 
   const handleTransaction = async () => {
+    if (!requireAuthentication(() => handleTransaction())) return
+
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
     if (!client) {
-      // TODO: open the login screen
       console.log('TODO: open the login screen.')
       return
     }
@@ -270,19 +291,19 @@ export default function FullScreen() {
   }
 
   const handleMessage = async (event: WebViewMessageEvent) => {
+    if (!requireAuthentication(() => handleMessage(event))) return
+
     const client = walletService.getCurrentWallet()
     if (!client) {
-      // TODO: open the login screen
       console.log('No client!')
       setAddress('')
       return
     }
-    const message = event.nativeEvent.data // Get message from WebView
+    const message = event.nativeEvent.data
     if (message === 'openSettings') {
       setIsSettingsModalOpen(true)
       return
     }
-    // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
       const request = JSON.parse(message)
       console.log('Raw request', request)
@@ -345,6 +366,16 @@ export default function FullScreen() {
         onClose={() => setIsSettingsModalOpen(false)}
         onSettingsChange={handleApplySettings}
         onMovementModeChange={handleMovementModeChange}
+      />
+
+      <LoginModal
+        isVisible={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false)
+          setPendingAction(null)
+        }}
+        onLogin={handleLoginSuccess}
+        setShowCreateAccount={() => {/* handle create account */}}
       />
 
       <StatusBar hidden />
