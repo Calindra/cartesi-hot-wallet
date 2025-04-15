@@ -39,8 +39,6 @@ const injectedJS = `
       enabled: true,
       right: 5,
       left: -5,
-      right: 5,
-      left: -5,
       up: -41,
       down: -51,
     };
