@@ -25,7 +25,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import { Settings } from '@/src/model/Settings'
 import { settingsService } from '@/src/services/SettingsService'
-import LoginModal from '@/components/Login'
+import LoginModal, { LoginCredentials } from '@/components/Login'
 
 const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiardcuzfsfkecblcx4p5sueisfrgnvtl6oovqzffeiel5agbv4laa/landscape-fullscreen.html"
 
@@ -104,7 +104,7 @@ export default function FullScreen() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [calculatedURI, setCalculatedURL] = useState('')
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [pendingLoginAction, setPendingLoginAction] = useState<(() => void) | null>(null)
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -118,17 +118,19 @@ export default function FullScreen() {
   const requireAuthentication = (action: () => void) => {
     const client = walletService.getCurrentWallet()
     if (!client) {
-      setPendingAction(() => action)
+      setPendingLoginAction(() => action)
       setIsLoginModalOpen(true)
       return false
     }
     return true
   }
 
-  const handleLoginSuccess = async () => {
-    if (pendingAction) {
-      pendingAction()
-      setPendingAction(null)
+  const handleLogin = async (credentials: LoginCredentials) => {
+    const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
+    setAddress(client.account.address)
+    if (pendingLoginAction) {
+      pendingLoginAction()
+      setPendingLoginAction(null)
     }
   }
 
@@ -248,7 +250,7 @@ export default function FullScreen() {
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
     if (!client) {
-      console.log('TODO: open the login screen.')
+      console.log('Wallet not connected!')
       return
     }
     try {
@@ -291,12 +293,13 @@ export default function FullScreen() {
   }
 
   const handleMessage = async (event: WebViewMessageEvent) => {
+    event.persist()
+
     if (!requireAuthentication(() => handleMessage(event))) return
 
     const client = walletService.getCurrentWallet()
     if (!client) {
-      console.log('No client!')
-      setAddress('')
+      console.log('Wallet not connected!')
       return
     }
     const message = event.nativeEvent.data
@@ -372,9 +375,8 @@ export default function FullScreen() {
         isVisible={isLoginModalOpen}
         onClose={() => {
           setIsLoginModalOpen(false)
-          setPendingAction(null)
         }}
-        onLogin={handleLoginSuccess}
+        onLogin={handleLogin}
         setShowCreateAccount={() => {/* handle create account */}}
       />
 
