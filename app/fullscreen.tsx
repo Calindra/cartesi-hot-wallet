@@ -101,6 +101,7 @@ export default function FullScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [calculatedURI, setCalculatedURL] = useState('')
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -165,11 +166,12 @@ export default function FullScreen() {
   const navigateToGamepad = (gamepadFileName: string) => {
     let aux = (webviewURI as string).split('/');
     aux.pop();
-    gamepadFileName = `${aux.join('/')}/${gamepadFileName}`;
-    console.log('navigateToGamepad', gamepadFileName)
+    const gamepadFullURL = `${aux.join('/')}/${gamepadFileName}`;
+    console.log('navigateToGamepad', gamepadFullURL)
+    setCalculatedURL(gamepadFullURL)
     if (webViewRef.current) {
       const settingsScript = `
-        window.location.href = ${JSON.stringify(gamepadFileName)};
+        window.location.href = ${JSON.stringify(gamepadFullURL)};
         true;
       `
       webViewRef.current.injectJavaScript(settingsScript)
@@ -352,7 +354,7 @@ export default function FullScreen() {
           <WebView
             ref={webViewRef}
             source={{
-              uri: (webviewURI as string) || DEFAULT_GAME_PAGE,
+              uri: calculatedURI || (webviewURI as string) || DEFAULT_GAME_PAGE,
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}
