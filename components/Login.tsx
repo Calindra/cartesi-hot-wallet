@@ -139,7 +139,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
   }
 
   return (
-    <Modal visible={isVisible} transparent animationType="slide" onRequestClose={handleClose}>
+    <Modal 
+      visible={isVisible} 
+      transparent animationType="slide" 
+      onRequestClose={handleClose}
+      supportedOrientations={['landscape', 'landscape-right']} // works=truer
+    >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.overlay} />
