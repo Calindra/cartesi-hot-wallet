@@ -104,7 +104,7 @@ export default function FullScreen() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [calculatedURI, setCalculatedURL] = useState('')
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [pendingLoginAction, setPendingLoginAction] = useState<(() => void) | null>(null)
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -115,10 +115,10 @@ export default function FullScreen() {
     true;
   `
 
-  const requireAuthentication = (action: () => void) => {
+  const requireAuthentication = (message: string) => {
     const client = walletService.getCurrentWallet()
     if (!client) {
-      setPendingLoginAction(() => action)
+      setPendingMessage(message)
       setIsLoginModalOpen(true)
       return false
     }
@@ -128,9 +128,9 @@ export default function FullScreen() {
   const handleLogin = async (credentials: LoginCredentials) => {
     const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
     setAddress(client.account.address)
-    if (pendingLoginAction) {
-      pendingLoginAction()
-      setPendingLoginAction(null)
+    if (pendingMessage) {
+      handleMessage({ nativeEvent: { data: pendingMessage } })
+      setPendingMessage(null)
     }
   }
 
@@ -245,8 +245,6 @@ export default function FullScreen() {
   }
 
   const handleTransaction = async () => {
-    if (!requireAuthentication(() => handleTransaction())) return
-
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
     if (!client) {
@@ -292,17 +290,16 @@ export default function FullScreen() {
     }
   }
 
-  const handleMessage = async (event: WebViewMessageEvent) => {
-    event.persist()
+  const handleMessage = async (event: (WebViewMessageEvent | {nativeEvent:{ data: string}})) => {
+    const message = event.nativeEvent.data
 
-    if (!requireAuthentication(() => handleMessage(event))) return
+    if (!requireAuthentication(message)) return
 
     const client = walletService.getCurrentWallet()
     if (!client) {
       console.log('Wallet not connected!')
       return
     }
-    const message = event.nativeEvent.data
     if (message === 'openSettings') {
       setIsSettingsModalOpen(true)
       return
