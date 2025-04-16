@@ -1,22 +1,24 @@
 {
   "expo": {
-    "name": "lenna-agent-project",
-    "slug": "lenna-agent-project",
-    "version": "1.0.0",
+    "name": "cartesi-hot-wallet",
+    "slug": "cartesi-hot-wallet",
+    "version": "0.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/cartesi-hot-wallet-logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "io.cartesi.hotwallet",
+      "supportsTablet": false,
+      "buildNumber": 1
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.fabiooshiro.lennaagentproject"
+      "package": "io.cartesi.hotwallet"
     },
     "web": {
       "bundler": "metro",
@@ -28,10 +30,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/splash.png",
+          "imageWidth": 400,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#a435f1"
         }
       ]
     ],
@@ -43,7 +45,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "d4af2bff-dcd5-4d33-bdc5-bd839c286a74"
+        "projectId": "add-something-here"
       }
     }
   }
