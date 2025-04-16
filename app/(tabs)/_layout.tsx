@@ -1,15 +1,13 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { HapticTab } from '@/components/HapticTab'
+import { IconSymbol } from '@/components/ui/IconSymbol'
+import TabBarBackground from '@/components/ui/TabBarBackground'
+import { Colors } from '@/constants/Colors'
+import { useColorScheme } from '@/hooks/useColorScheme'
+import { Tabs } from 'expo-router'
+import React from 'react'
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
 
   return (
     <Tabs
@@ -18,13 +16,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarStyle: { display: 'none' },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -44,9 +38,8 @@ export default function TabLayout() {
         options={{
           title: 'Rives',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="gamecontroller.fill" color={color} />,
-
         }}
       />
     </Tabs>
-  );
+  )
 }
