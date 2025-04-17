@@ -5,7 +5,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { walletService } from '@/src/services/WalletService';
 import { Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Hex, parseEther } from 'viem';
 
 export default function SendEthScreen() {
@@ -41,32 +41,38 @@ export default function SendEthScreen() {
     return (
         <>
             <Stack.Screen options={{ headerTitle: 'Send' }} />
-            <ThemedView style={styles.container}>
-                <ThemedText style={styles.label}>Recipient Address</ThemedText>
-                <ThemedTextInput
-                    style={styles.input}
-                    placeholder="0x..."
-                    onChangeText={setRecipient}
-                    value={recipient}
-                    autoCapitalize="none"
-                />
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior="height"
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ThemedView style={styles.container}>
+                        <ThemedText style={styles.label}>Recipient Address</ThemedText>
+                        <ThemedTextInput
+                            style={styles.input}
+                            placeholder="0x..."
+                            onChangeText={setRecipient}
+                            value={recipient}
+                            autoCapitalize="none"
+                        />
 
-                <ThemedText style={styles.label}>Amount (ETH)</ThemedText>
-                <ThemedTextInput
-                    style={styles.input}
-                    placeholder="e.g. 0.01"
-                    keyboardType="numeric"
-                    onChangeText={setAmount}
-                    value={amount}
-                />
+                        <ThemedText style={styles.label}>Amount (ETH)</ThemedText>
+                        <ThemedTextInput
+                            style={styles.input}
+                            placeholder="e.g. 0.01"
+                            keyboardType="decimal-pad"
+                            onChangeText={(text) => setAmount(text.replace(',', '.'))}
+                            value={amount}
+                        />
 
-                <ThemedButton buttonText="Send ETH" onPress={() => {
-                    console.log('Send ETH')
-                    sendEth()
-                }} />
-            </ThemedView>
+                        <ThemedButton buttonText="Send ETH" onPress={() => {
+                            console.log('Send ETH')
+                            sendEth()
+                        }} />
+                    </ThemedView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
         </>
-
     );
 }
 
