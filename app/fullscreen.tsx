@@ -129,7 +129,7 @@ export default function FullScreen() {
     const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
     setAddress(client.account.address)
     if (pendingMessage) {
-      handleMessage({ nativeEvent: { data: pendingMessage } })
+      await handleMessage({ nativeEvent: { data: pendingMessage } })
       setPendingMessage(null)
     }
   }
@@ -340,6 +340,23 @@ export default function FullScreen() {
           webViewRef.current.injectJavaScript(eventScript)
         } catch (e) {
           console.error(e)
+          if (e instanceof Error) {
+            const response = {
+              reqId: currentTransaction.request.reqId,
+              result: {
+                error: {
+                  message: e.message,
+                }
+              },
+            };
+            const eventScript = `
+              window.ethereum.responseReceiver(${JSON.stringify(response)});
+              true; // To ensure execution is finished
+            `
+            if (webViewRef.current) {
+              webViewRef.current.injectJavaScript(eventScript)
+            }
+          }
         }
       } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
         console.log('Register listener', request)
