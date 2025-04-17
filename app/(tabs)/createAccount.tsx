@@ -260,7 +260,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
     );
 }
 
-const HEADER_HEIGHT = 60;
+const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 80;
 
 const styles = StyleSheet.create({
     container: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         padding: 24,
-        paddingTop: HEADER_HEIGHT + 24, // Add padding for header height
+        paddingTop: HEADER_HEIGHT + 24,
     },
     lockIcon: {
         alignSelf: 'center',
@@ -304,8 +304,7 @@ const styles = StyleSheet.create({
         zIndex: 1000,
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
-        paddingTop: 10,
-
+        paddingTop: Platform.OS === 'ios' ? 50 : 30,
     },
     backButton: {
         padding: 8,

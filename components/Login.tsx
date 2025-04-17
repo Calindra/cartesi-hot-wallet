@@ -1,20 +1,21 @@
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import LoginContext from '@/hooks/loginContext'
 import { Feather } from '@expo/vector-icons'
-import { useNavigation, useRouter } from 'expo-router'
-import React, { useContext, useState } from 'react'
+import { useRouter } from 'expo-router'
 import {
-  Animated,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TextStyle,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
-  ViewStyle,
   ScrollView,
+  TextInput,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Keyboard,
+  Animated,
+  StyleSheet,
+  Platform,
+  LayoutChangeEvent,
+  ViewStyle,
+  TextStyle,
 } from 'react-native'
 import zxcvbn from 'zxcvbn'
 import { ThemedText } from './ThemedText'
@@ -37,15 +38,13 @@ interface Styles {
   headerContainer: ViewStyle
   closeButton: ViewStyle
   card: ViewStyle
-  userIcon: ViewStyle
+  userIcon: TextStyle
   title: TextStyle
   subtitle: TextStyle
   inputContainer: ViewStyle
   inputIconContainer: ViewStyle
   input: TextStyle
   eyeIcon: ViewStyle
-  forgotPasswordButton: ViewStyle
-  forgotPasswordText: TextStyle
   errorContainer: ViewStyle
   error: TextStyle
   button: ViewStyle
@@ -63,10 +62,27 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  // Use expo-router for navigation
   const router = useRouter()
 
-  const buttonScale = new Animated.Value(1)
+  const scrollRef = useRef<ScrollView>(null)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [emailY, setEmailY] = useState(0)
+  const [passwordY, setPasswordY] = useState(0)
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0)
+    })
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
+
+  const buttonScale = useRef(new Animated.Value(1)).current
 
   const handleButtonPress = (): void => {
     Animated.sequence([
@@ -88,10 +104,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     setError('')
     onClose()
   }
-  const handleSignUp = (): void => {
-    handleClose() // close the login modal first
-    router.push('/(fullscreen)/createAccount')
 
+  const handleSignUp = (): void => {
+    handleClose()
+    router.push('/createAccount')
   }
 
   const validateEmail = (email: string): boolean => {
@@ -99,8 +115,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   }
 
   const validatePassword = (password: string): { passWordStrengthScore: number; timeToCrack: string | number } => {
-    const { score, calc_time, crack_times_seconds } = zxcvbn(password)
-
+    const { score, crack_times_seconds } = zxcvbn(password)
     return { passWordStrengthScore: score, timeToCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second }
   }
 
@@ -112,19 +127,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
       setError('Please enter your email')
       return
     }
-
     if (!validateEmail(email)) {
       setError('Please enter a valid email')
       return
     }
-
     if (!password) {
       setError('Please enter your password')
       return
     }
 
     const { passWordStrengthScore, timeToCrack } = validatePassword(password)
-
     if (passWordStrengthScore < 3) {
       setError(`Please enter a stronger password.\nThat password would take ${timeToCrack}s to be broken`)
       return
@@ -132,10 +144,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 
     setIsLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       await onLogin({ email, password })
       handleClose()
-    } catch (e) {
+    } catch {
       setError('Invalid email or password')
     } finally {
       setIsLoading(false)
@@ -145,20 +157,22 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   return (
     <Modal
       visible={isVisible}
-      transparent animationType="slide"
+      transparent
+      animationType="slide"
       onRequestClose={handleClose}
-      supportedOrientations={['landscape', 'landscape-right']} // works=true
+      supportedOrientations={['landscape', 'landscape-right']}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.modalContainer}
-      >
-        <TouchableWithoutFeedback onPress={handleClose}>
-          <View style={styles.overlay} />
-        </TouchableWithoutFeedback>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
 
-          <View style={styles.modalContent}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: keyboardHeight }}
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.headerContainer}>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                 <Feather name="x" size={24} color="#666" />
@@ -166,38 +180,55 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
             </View>
 
             <View style={styles.card}>
-              <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
+              <Feather name="user" size={32} color="#4a90e2"
+                style={styles.userIcon}
+              />
               <ThemedText style={styles.title}>Welcome</ThemedText>
               <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
 
-              <View style={styles.inputContainer}>
+              <View
+                style={styles.inputContainer}
+                onLayout={(e: LayoutChangeEvent) => setEmailY(e.nativeEvent.layout.y)}
+              >
                 <View style={styles.inputIconContainer}>
                   <Feather name="mail" size={20} color="#666" />
                 </View>
                 <TextInput
                   style={styles.input}
                   placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
                   placeholderTextColor="#999"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() =>
+                    scrollRef.current?.scrollTo({ y: emailY - 20, animated: true })
+                  }
                 />
               </View>
 
-              <View style={styles.inputContainer}>
+              <View
+                style={styles.inputContainer}
+                onLayout={(e: LayoutChangeEvent) => setPasswordY(e.nativeEvent.layout.y)}
+              >
                 <View style={styles.inputIconContainer}>
                   <Feather name="lock" size={20} color="#666" />
                 </View>
                 <TextInput
                   style={styles.input}
                   placeholder="Password"
+                  placeholderTextColor="#999"
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
-                  placeholderTextColor="#999"
+                  onFocus={() =>
+                    scrollRef.current?.scrollTo({ y: passwordY - 20, animated: true })
+                  }
                 />
-                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
                   <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
                 </TouchableOpacity>
               </View>
@@ -215,22 +246,22 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                   onPress={handleLogin}
                   disabled={isLoading}
                 >
-                  <ThemedText style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</ThemedText>
+                  <ThemedText style={styles.buttonText}>
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </ThemedText>
                 </TouchableOpacity>
               </Animated.View>
 
               <View style={styles.signupContainer}>
                 <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
-                <TouchableOpacity
-                  onPress={() => { handleSignUp() }}
-                >
+                <TouchableOpacity onPress={handleSignUp}>
                   <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </View>
+      </View>
     </Modal>
   )
 }
@@ -253,8 +284,6 @@ const styles = StyleSheet.create<Styles>({
     position: 'absolute',
     bottom: 0,
   },
-
-
   headerContainer: {
     padding: 16,
     flexDirection: 'row',
@@ -313,14 +342,6 @@ const styles = StyleSheet.create<Styles>({
     position: 'absolute',
     right: 16,
     top: 18,
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
-  },
-  forgotPasswordText: {
-    color: '#4a90e2',
-    fontSize: 14,
   },
   errorContainer: {
     flexDirection: 'row',
