@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
   ViewStyle,
+  ScrollView,
 } from 'react-native'
 import zxcvbn from 'zxcvbn'
 import { ThemedText } from './ThemedText'
@@ -142,89 +143,89 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
   }
 
   return (
-    <Modal visible={isVisible} transparent animationType="slide" onRequestClose={handleClose}>
+    <Modal
+      visible={isVisible}
+      transparent animationType="slide"
+      onRequestClose={handleClose}
+      supportedOrientations={['landscape', 'landscape-right']} // works=true
+    >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
 
         <View style={styles.modalContent}>
-          <View style={styles.headerContainer}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.card}>
-            <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
-            <ThemedText style={styles.title}>Welcome</ThemedText>
-            <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
-
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="mail" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="lock" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
-                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <View style={styles.headerContainer}>
+              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <Feather name="x" size={24} color="#666" />
               </TouchableOpacity>
             </View>
 
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Feather name="alert-circle" size={16} color="#ff4d4d" />
-                <ThemedText style={styles.error}>{error}</ThemedText>
+            <View style={styles.card}>
+              <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
+              <ThemedText style={styles.title}>Welcome</ThemedText>
+              <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
+
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="mail" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
               </View>
-            ) : null}
 
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                <ThemedText style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</ThemedText>
-              </TouchableOpacity>
-            </Animated.View>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="lock" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholderTextColor="#999"
+                />
+                <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
+                  <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-            <View style={styles.signupContainer}>
-              <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
-              <TouchableOpacity onPress={handleSignUp}>
-                <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
-                {/* <View style={styles.signupContainer}>
-              <ThemedText style={styles.signupText}>
-                Don't have an account? Remember, use a strong UNIQUE password to create one.
-              </ThemedText>
-              <ThemedText style={styles.signupText}>
-                The password you choose is the only attachment between you and your account
-              </ThemedText>
-              <ThemedText style={styles.signupText}>There is no password recovery</ThemedText>
-            </View> */}
-              </TouchableOpacity>
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Feather name="alert-circle" size={16} color="#ff4d4d" />
+                  <ThemedText style={styles.error}>{error}</ThemedText>
+                </View>
+              ) : null}
+
+              <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+                <TouchableOpacity
+                  style={[styles.button, isLoading && styles.buttonDisabled]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <ThemedText style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</ThemedText>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <View style={styles.signupContainer}>
+                <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
+                <TouchableOpacity
+                  onPress={() => { handleSignUp() }}
+                >
+                  <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -234,18 +235,23 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
 const styles = StyleSheet.create<Styles>({
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#f5f6fa',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '90%',
+    maxHeight: '75%',
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
   },
+
+
   headerContainer: {
     padding: 16,
     flexDirection: 'row',
