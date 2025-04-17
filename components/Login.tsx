@@ -149,13 +149,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
       onRequestClose={handleClose}
       supportedOrientations={['landscape', 'landscape-right']} // works=true
     >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modalContainer}
+      >
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 
-        <View style={styles.modalContent}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.modalContent}>
             <View style={styles.headerContainer}>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                 <Feather name="x" size={24} color="#666" />
@@ -225,8 +228,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
   )
