@@ -10,6 +10,9 @@
     },
     "ios": {
       "bundleIdentifier": "com.calindratech.hotwallet"
+    },
+    "cli": {
+      "appVersionSource": "remote"
     }
   }
 }
