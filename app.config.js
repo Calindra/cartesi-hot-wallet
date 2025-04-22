@@ -2,11 +2,11 @@ const VERSION = '0.0.1'
 const IOS_BUILDNUMBER = '1'
 module.exports = {
   expo: {
-    name: 'cartesi-hot-wallet',
-    slug: 'hot-wallet',
+    name: 'Cartesi Hot Wallet',
+    slug: 'cartesi-hot-wallet',
     version: VERSION,
     orientation: 'portrait',
-    icon: '.assets/images/cartesi-hot-wallet-logo.png',
+    icon: './assets/images/cartesi-hot-wallet-logo.png',
     scheme: 'myapp',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
@@ -47,7 +47,7 @@ module.exports = {
         origin: false,
       },
       eas: {
-        projectId: 'cd7796a0-aa90-4cf8-a0fd-3e0b65f3a303',
+        projectId: 'bd0f0df3-44d7-411b-8ccd-9a1345bb32da',
       },
     },
     cli: {

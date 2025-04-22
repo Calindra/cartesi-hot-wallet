@@ -2,14 +2,14 @@
   "expo": {
     "extra": {
       "eas": {
-        "projectId": "cd7796a0-aa90-4cf8-a0fd-3e0b65f3a303"
+        "projectId": "bd0f0df3-44d7-411b-8ccd-9a1345bb32da"
       }
     },
     "android": {
-      "package": "com.calindratech.hotwallet"
+      "package": "com.calindratech.cartesihotwallet"
     },
     "ios": {
-      "bundleIdentifier": "com.calindratech.hotwallet"
+      "bundleIdentifier": "com.calindratech.cartesihotwallet"
     },
     "cli": {
       "appVersionSource": "remote"
