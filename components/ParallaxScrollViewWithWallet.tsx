@@ -6,7 +6,6 @@ import {
   View,
 } from 'react-native'
 import * as SecureStore from 'expo-secure-store'
-import CreateAccountPage from './CreateAccount' // rename for clarity if needed
 
 import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'

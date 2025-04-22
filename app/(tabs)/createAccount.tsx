@@ -1,4 +1,3 @@
-// Fix for stickyHeader in CreateAccountPage.tsx
 import React, { useState } from 'react';
 import {
     Alert,
@@ -14,7 +13,8 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import ShortenedPrivacyPolicy from '@/components/PrivacyPolicy/ShortennedPrivacyPolicy';
-import { Stack, router } from 'expo-router'
+import { Stack, router } from 'expo-router';
+import { formatTimeToCrack, getPasswordStrengthInfo, validateEmail, validatePassword } from '../utils/createAccountUtils';
 
 
 interface CreateAccountPageProps {
@@ -36,24 +36,12 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
     const buttonScale = new Animated.Value(1);
 
     const handleBack = () => {
-        router.back() // Goes back to previous screen
-    }
-
-    // Other functions remain unchanged
-    const validatePassword = (pass: string) => {
-        const hasMinLength = pass.length >= 6;
-        const hasNumber = /\d/.test(pass);
-        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
-        return { hasMinLength, hasNumber, hasSpecial };
+        router.back();
     };
 
     const getPasswordStrength = () => {
-        const validation = validatePassword(password);
-        const score = Object.values(validation).filter(Boolean).length;
-        if (score === 0) return { color: '#ff4d4d', text: 'Weak' };
-        if (score === 1) return { color: '#ffd700', text: 'Fair' };
-        if (score === 2) return { color: '#2ecc71', text: 'Good' };
-        return { color: '#27ae60', text: 'Strong' };
+        const { score } = validatePassword(password);
+        return getPasswordStrengthInfo(score);
     };
 
     const handleButtonPress = () => {
@@ -84,6 +72,16 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
         }
         if (!privacyPolicyAccepted) {
             setError('You must accept the Privacy Policy to continue');
+            return;
+        }
+        if (!validateEmail(email)) {
+            setError('Please enter a valid email');
+            return;
+        }
+
+        const { score, timeToCrack } = validatePassword(password);
+        if (score < 3) {
+            setError(`Please enter a stronger password.\nThat password could be cracked in ${formatTimeToCrack(timeToCrack)}`);
             return;
         }
 
@@ -263,6 +261,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
 const HEADER_HEIGHT = Platform.OS === 'ios' ? 90 : 80;
 
 const styles = StyleSheet.create({
+    // Styles remain unchanged
     container: {
         flex: 1,
         backgroundColor: '#fff',
