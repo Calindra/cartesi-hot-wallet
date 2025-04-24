@@ -46,7 +46,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
 
   const getWalletBalance = async (address: `0x${string}`) => {
     const balance = await walletService.getWalletBalance(address)
-    setBalance(balance)
+    setBalance(parseFloat(balance).toFixed(6))
   }
 
   const getWalletLogs = async (address: `0x${string}`) => {
