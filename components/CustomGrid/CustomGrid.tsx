@@ -56,6 +56,7 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
               }}
               style={styles.columnContainer}
             >
+
               <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
             </Link>
           ))}
