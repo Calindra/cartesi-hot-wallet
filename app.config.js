@@ -33,8 +33,8 @@ module.exports = {
         'expo-splash-screen',
         {
           image: './assets/images/splash.png',
-          imageWidth: 400,
-          resizeMode: 'contain',
+          imageWidth: 800,
+          resizeMode: 'cover',
           backgroundColor: '#a435f1',
         },
       ],
