@@ -1,16 +1,31 @@
-import { ThemedButton } from '@/components/ThemedButton';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { ThemedView } from '@/components/ThemedView';
 import { walletService } from '@/src/services/WalletService';
 import { Stack } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { Alert, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, View, TouchableOpacity } from 'react-native';
 import { Hex, parseEther } from 'viem';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
+import LoginContext from '@/hooks/loginContext';
 
 export default function SendEthScreen() {
+    const { address } = useContext(LoginContext)
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
+    const [balance, setBalance] = useState('');
+    const [isSending, setIsSending] = useState(false);
+
+    useEffect(() => {
+        if (address) {
+            getWalletBalance(address as `0x${string}`);
+        }
+    }, [address]);
+
+    const getWalletBalance = async (address: `0x${string}`) => {
+        const balance = await walletService.getWalletBalance(address);
+        setBalance(parseFloat(balance).toFixed(6));
+    };
 
     const sendEth = async () => {
         if (!recipient || !amount) {
@@ -19,11 +34,14 @@ export default function SendEthScreen() {
             return;
         }
 
+        setIsSending(true);
+
         try {
             const walletClient = walletService.getCurrentWallet()
             if (!walletClient) {
                 console.log('There is no current wallet')
-                return
+                setIsSending(false);
+                return;
             }
             const txHash = await walletClient.sendTransaction({
                 to: recipient as Hex,
@@ -32,43 +50,68 @@ export default function SendEthScreen() {
             });
 
             Alert.alert('Transaction Sent!', `Tx Hash: ${txHash}`);
+            await getWalletBalance(address as `0x${string}`); // Refresh balance
         } catch (error) {
             console.error(error);
             Alert.alert('Error', error instanceof Error ? error.message : 'Something went wrong');
+        } finally {
+            setIsSending(false);
         }
     };
 
     return (
         <>
-            <Stack.Screen options={{ headerTitle: 'Send' }} />
+            <Stack.Screen options={{ headerTitle: 'Send', headerBackTitle: 'Home' }} />
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior="height"
             >
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ThemedView style={styles.container}>
+                        <MaterialIcons name="send" size={48} color="#4a90e2" style={styles.icon} />
+                        <ThemedText style={styles.description}>Send ETH to another wallet address quickly and securely.</ThemedText>
+                        <ThemedText style={styles.balance}>Your Balance: {balance} ETH</ThemedText>
+
                         <ThemedText style={styles.label}>Recipient Address</ThemedText>
-                        <ThemedTextInput
-                            style={styles.input}
-                            placeholder="0x..."
-                            onChangeText={setRecipient}
-                            value={recipient}
-                            autoCapitalize="none"
-                        />
+                        <View style={styles.inputContainer}>
+                            <View style={styles.inputIconContainer}>
+                                <Feather name="user" size={20} color="#666" />
+                            </View>
+                            <ThemedTextInput
+                                style={styles.input}
+                                placeholder="0x..."
+                                onChangeText={setRecipient}
+                                value={recipient}
+                                autoCapitalize="none"
+                                placeholderTextColor="#999"
+                            />
+                        </View>
 
                         <ThemedText style={styles.label}>Amount (ETH)</ThemedText>
-                        <ThemedTextInput
-                            style={styles.input}
-                            placeholder="e.g. 0.01"
-                            keyboardType="decimal-pad"
-                            onChangeText={(text) => setAmount(text.replace(',', '.'))}
-                            value={amount}
-                        />
+                        <View style={styles.inputContainer}>
+                            <View style={styles.inputIconContainer}>
+                                <Feather name="dollar-sign" size={20} color="#666" />
+                            </View>
+                            <ThemedTextInput
+                                style={styles.input}
+                                placeholder="e.g. 0.01"
+                                keyboardType="decimal-pad"
+                                onChangeText={(text) => setAmount(text.replace(',', '.'))}
+                                value={amount}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
 
-                        <ThemedButton buttonText="Send ETH" onPress={() => {
-                            console.log('Send ETH')
-                            sendEth()
-                        }} />
+                        <TouchableOpacity 
+                            style={[styles.button, isSending && styles.buttonDisabled]} 
+                            onPress={() => {
+                                console.log('Send ETH')
+                                sendEth()
+                            }}
+                            disabled={isSending}
+                        >
+                            <ThemedText style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Send ETH</ThemedText>
+                        </TouchableOpacity>
                     </ThemedView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
@@ -82,15 +125,50 @@ const styles = StyleSheet.create({
         padding: 24,
         justifyContent: 'center',
     },
+    icon: {
+        alignSelf: 'center',
+        marginBottom: 16,
+    },
+    description: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 16,
+    },
+    balance: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 24,
+        fontWeight: 'bold',
+    },
     label: {
         fontSize: 16,
         marginVertical: 8,
     },
-    input: {
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         borderWidth: 1,
         borderColor: '#ccc',
-        padding: 12,
         borderRadius: 8,
         marginBottom: 16,
+        paddingHorizontal: 12,
+    },
+    inputIconContainer: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 15,
+    },
+    button: {
+        color: '#fff',
+        backgroundColor: '#4a90e2',
+        height: 56,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonDisabled: {
+        backgroundColor: '#a0c5e8',
     },
 });
