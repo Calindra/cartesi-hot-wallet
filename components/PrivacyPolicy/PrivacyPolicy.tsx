@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     KeyboardAvoidingView,
     Modal,
@@ -14,8 +14,6 @@ import {
 } from 'react-native'
 import { ThemedText } from '../ThemedText'
 import * as SecureStore from 'expo-secure-store';
-
-
 
 interface Styles {
     modalContainer: ViewStyle
@@ -32,18 +30,87 @@ interface Styles {
     agreeButtonText: TextStyle
 }
 
-async function savePrivacyPolicyAgreement(value: boolean) {
-    console.log("SALVOU>>>>>>>>>>>.", value)
-    await SecureStore.setItemAsync('PrivacyPolicyAgreement', JSON.stringify(value))
-}
-
 interface PrivacyPolicyProps {
     onClose: () => void
+    onAccept?: () => void // Callback opcional que será chamado quando o usuário aceitar
+    shouldCheckPriorAgreement?: boolean // Controla se deve verificar aceitação prévia
+}
+interface PrivacyPolicyComponent extends React.FC<PrivacyPolicyProps> {
+    hasUserAgreed: () => Promise<boolean>;
+    resetAgreement: () => Promise<void>;
 }
 
-const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onClose }) => {
 
-    const PrivacyPolicyContent = `This Privacy Policy describes how your personal information is collected, used, and shared when you use our mobile application (“App”), provided by [INSERT COMPANY NAME].
+const PRIVACY_POLICY_STORAGE_KEY = 'PrivacyPolicyAgreement';
+
+const PrivacyPolicy: PrivacyPolicyComponent = ({
+    onClose,
+    onAccept,
+    shouldCheckPriorAgreement = true
+}) => {
+    const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+
+    useEffect(() => {
+        // Verifica se o usuário já aceitou a política anteriormente
+        if (shouldCheckPriorAgreement) {
+            checkPriorAgreement();
+        }
+    }, [shouldCheckPriorAgreement]);
+
+    const checkPriorAgreement = async () => {
+        try {
+            const storedValue = await SecureStore.getItemAsync(PRIVACY_POLICY_STORAGE_KEY);
+            if (storedValue === 'true') {
+                // Se já aceitou, fecha o modal automaticamente
+                handleClose();
+
+                // Notifica que houve aceitação (mesmo que prévia)
+                if (onAccept) {
+                    onAccept();
+                }
+            }
+        } catch (error) {
+            console.error('Error checking privacy policy agreement:', error);
+        }
+    };
+
+    const savePrivacyPolicyAgreement = async () => {
+        try {
+            await SecureStore.setItemAsync(PRIVACY_POLICY_STORAGE_KEY, 'true');
+            console.log("Privacy policy agreement saved successfully");
+
+            // Notifica sobre a aceitação
+            if (onAccept) {
+                onAccept();
+            }
+
+            handleClose();
+        } catch (error) {
+            console.error('Error saving privacy policy agreement:', error);
+        }
+    };
+
+    const handleClose = () => {
+        setIsVisible(false);
+        onClose();
+    };
+
+    const handleScroll = (event: any) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const isAtBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+
+        if (isAtBottom && !hasScrolledToEnd) {
+            setHasScrolledToEnd(true);
+        }
+    };
+
+    // Se o modal não estiver visível, não renderiza nada
+    if (!isVisible) {
+        return null;
+    }
+
+    const PrivacyPolicyContent = `This Privacy Policy describes how your personal information is collected, used, and shared when you use our mobile application ("App"), provided by [INSERT COMPANY NAME].
 
 1. Information We Collect
 When you use the App, we may collect the following information:
@@ -92,20 +159,10 @@ If you have any questions about this Privacy Policy or how we handle your inform
 [INSERT COMPANY NAME]
 [INSERT ADDRESS]
 [INSERT CONTACT EMAIL]
-`
-    const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false)
-    const handleScroll = (event: any) => {
-        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent
-        const isAtBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20
-
-        if (isAtBottom && !hasScrolledToEnd) {
-            setHasScrolledToEnd(true)
-        }
-    }
-
+`;
 
     return (
-        <Modal transparent animationType="slide">
+        <Modal transparent animationType="slide" visible={isVisible}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
                 <TouchableWithoutFeedback>
                     <View style={styles.overlay} />
@@ -113,14 +170,18 @@ If you have any questions about this Privacy Policy or how we handle your inform
 
                 <View style={styles.modalContent}>
                     <View style={styles.headerContainer}>
-
+                        {/* Você pode adicionar um botão de fechar aqui se quiser */}
                     </View>
 
                     <View style={styles.card}>
                         <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
                         <ThemedText style={styles.title}>Privacy Policy</ThemedText>
                         <View style={{ flex: 1 }}>
-                            <ScrollView onScroll={handleScroll} scrollEventThrottle={100} showsVerticalScrollIndicator>
+                            <ScrollView
+                                onScroll={handleScroll}
+                                scrollEventThrottle={100}
+                                showsVerticalScrollIndicator
+                            >
                                 <View style={styles.signupContainer}>
                                     <ThemedText style={styles.signupText}>
                                         {PrivacyPolicyContent}
@@ -128,23 +189,43 @@ If you have any questions about this Privacy Policy or how we handle your inform
                                 </View>
                             </ScrollView>
                         </View>
-                        <TouchableOpacity style={[
-                            styles.agreeButton,
-                            { opacity: hasScrolledToEnd ? 1 : 0.5 }
-                        ]} onPress={async () => {
-                            await savePrivacyPolicyAgreement(true)
-                            onClose()
-                        }}
-
-                            disabled={!hasScrolledToEnd}>
+                        <TouchableOpacity
+                            style={[
+                                styles.agreeButton,
+                                { opacity: hasScrolledToEnd ? 1 : 0.5 }
+                            ]}
+                            onPress={savePrivacyPolicyAgreement}
+                            disabled={!hasScrolledToEnd}
+                        >
                             <ThemedText style={styles.agreeButtonText}>I Agree</ThemedText>
                         </TouchableOpacity>
                     </View>
                 </View>
             </KeyboardAvoidingView>
         </Modal>
-    )
-}
+    );
+};
+
+// Método estático que pode ser chamado sem instanciar o componente
+PrivacyPolicy.hasUserAgreed = async (): Promise<boolean> => {
+    try {
+        const storedValue = await SecureStore.getItemAsync(PRIVACY_POLICY_STORAGE_KEY);
+        return storedValue === 'true';
+    } catch (error) {
+        console.error('Error checking privacy policy agreement:', error);
+        return false;
+    }
+};
+
+// Método estático para resetar o acordo (útil para testes ou para forçar mostrar o modal novamente)
+PrivacyPolicy.resetAgreement = async (): Promise<void> => {
+    try {
+        await SecureStore.deleteItemAsync(PRIVACY_POLICY_STORAGE_KEY);
+        console.log("Privacy policy agreement reset successfully");
+    } catch (error) {
+        console.error('Error resetting privacy policy agreement:', error);
+    }
+};
 
 const styles = StyleSheet.create<Styles>({
     modalContainer: {
@@ -215,6 +296,6 @@ const styles = StyleSheet.create<Styles>({
         fontSize: 16,
         fontWeight: '600',
     },
-})
+});
 
-export default PrivacyPolicy
+export default PrivacyPolicy;
