@@ -1,5 +1,5 @@
-const VERSION = '0.0.1'
-const IOS_BUILDNUMBER = '1'
+const VERSION = '0.0.2'
+const IOS_BUILDNUMBER = '2'
 module.exports = {
   expo: {
     name: 'Cartesi Hot Wallet',
