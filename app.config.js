@@ -17,7 +17,7 @@ module.exports = {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: './assets/images/cartesi-hot-wallet-logo.png',
         backgroundColor: '#ffffff',
       },
       package: 'io.cartesi.hotwallet',
