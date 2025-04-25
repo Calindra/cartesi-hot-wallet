@@ -18,3 +18,5 @@
 - [ ] I have updated the documentation
 - [ ] My changes generate no new warnings
 - [ ] I have linked the issue (if applicable)
+
+### How to test
