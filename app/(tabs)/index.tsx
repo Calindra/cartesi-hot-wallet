@@ -1,12 +1,12 @@
 import CustomGrid from '@/components/CustomGrid/CustomGrid'
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet'
-import { IconSymbol } from '@/components/ui/IconSymbol'
 import { GameData } from '@/src/model/GameData'
 import * as NavigationBar from 'expo-navigation-bar'
 import { usePathname } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
 import React, { useEffect, useState } from 'react'
-import { Dimensions, Platform, ScrollView, StyleSheet } from 'react-native'
+import { Dimensions, Image, Platform, ScrollView, StyleSheet } from 'react-native'
+const logo = require('../../assets/images/banner-cartesi-app-1920x1920px.jpg')
 
 // TODO: could come from an API
 const gameData: GameData[] = [
@@ -111,11 +111,10 @@ export default function Home() {
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+        <Image
+          source={logo}
+          style={[styles.headerImage, { width: '120%', height: 260 }]} // Ajuste conforme necessário
+          resizeMode="cover"
         />
       }
     >

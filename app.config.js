@@ -20,6 +20,7 @@ module.exports = {
         foregroundImage: './assets/images/cartesi-hot-wallet-logo.png',
         backgroundColor: '#ffffff',
       },
+      versionCode: IOS_BUILDNUMBER,
       package: 'io.cartesi.hotwallet',
     },
     web: {
