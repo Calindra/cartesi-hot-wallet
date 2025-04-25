@@ -25,6 +25,7 @@ export function formatDate(date: Date) {
     return `${month}/${day}/${finalYear}`;
   
     // return `${month}/${day}/${finalYear}, ${time}`;
+
   }
   
 
@@ -157,3 +158,4 @@ export async function getRuleLeaderboard(
     `
   }
   
+

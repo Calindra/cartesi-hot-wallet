@@ -7,11 +7,9 @@ import {
 } from 'react-native'
 import * as SecureStore from 'expo-secure-store'
 
-import CreateAccount from './CreateAccount'
 import LoginModal, { LoginCredentials } from './Login'
 import OnboardingModal from './Onboarding/Onboarding'
 import ParallaxScrollView, { ParallaxScrollViewProps } from './ParallaxScrollView'
-import PrivacyPolicy from './PrivacyPolicy/PrivacyPolicy'
 import SettingsModal from './SettingsModal'
 import { WalletHeader } from './WalletHeader/WalletHeader'
 
@@ -44,7 +42,6 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
   const [showSettings, setShowSettings] = useState(false)
 
   const [gamepadURL, setGamepadURL] = useState('doom-with-arrows.html')
-  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false) // starts as false
   const { setAddress } = useContext(LoginContext)
   const headerHeight = Platform.OS === 'ios' ? 107 : (StatusBar.currentHeight || 0) + 60
 
@@ -64,19 +61,6 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
     const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
     setAddress(client.account.address)
     return
-  }
-
-  useEffect(() => {
-    const checkAgreement = async () => {
-      const agreed = await getPrivacyPolicyAgreement()
-      setShowPrivacyPolicy(!agreed) // Show only if not agreed
-    }
-    checkAgreement()
-  }, [])
-
-  const handleClosePrivacyPolicy = async () => {
-    await setPrivacyPolicyAgreement() // Save agreement
-    setShowPrivacyPolicy(false)
   }
 
   const handleApplySettings = async (settings: Settings) => {
@@ -102,7 +86,7 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             isVisible={showLogin}
             onClose={() => setShowLogin(false)}
             onLogin={handleLogin}
-            setShowCreateAccount={setShowCreateAccount}
+
           />
           <OnboardingModal
             isVisible={showOnboarding}
@@ -114,11 +98,9 @@ const ParallaxScrollViewWithWallet: React.FC<ParallaxScrollViewWithWalletProps> 
             onSettingsChange={handleApplySettings}
             onMovementModeChange={(url) => setGamepadURL(url)}
           />
-          <CreateAccount
-            isVisible={showCreateAccount}
-            onClose={() => setShowCreateAccount(false)}
-            onSave={() => { }}
-          />
+
+
+
         </ParallaxScrollView>
 
         {showWallet && (

@@ -25,6 +25,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import WebView, { WebViewMessageEvent } from 'react-native-webview'
 import { Settings } from '@/src/model/Settings'
 import { settingsService } from '@/src/services/SettingsService'
+import LoginModal, { LoginCredentials } from '@/components/Login'
 
 const DEFAULT_GAME_PAGE = "https://ipfs.io/ipfs/bafybeiardcuzfsfkecblcx4p5sueisfrgnvtl6oovqzffeiel5agbv4laa/landscape-fullscreen.html"
 
@@ -101,6 +102,9 @@ export default function FullScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const { setAddress } = useContext(LoginContext)
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [calculatedURI, setCalculatedURL] = useState('')
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null)
 
   const injectJS = `
     document.body.style.overflow = 'hidden';
@@ -110,6 +114,25 @@ export default function FullScreen() {
       });
     true;
   `
+
+  const requireAuthentication = (message: string) => {
+    const client = walletService.getCurrentWallet()
+    if (!client) {
+      setPendingMessage(message)
+      setIsLoginModalOpen(true)
+      return false
+    }
+    return true
+  }
+
+  const handleLogin = async (credentials: LoginCredentials) => {
+    const client = walletService.setCurrentWallet(`${credentials.email}\t${credentials.password}`)
+    setAddress(client.account.address)
+    if (pendingMessage) {
+      await handleMessage({ nativeEvent: { data: pendingMessage } })
+      setPendingMessage(null)
+    }
+  }
 
   const changeOrientation = async () => {
     await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT)
@@ -165,11 +188,12 @@ export default function FullScreen() {
   const navigateToGamepad = (gamepadFileName: string) => {
     let aux = (webviewURI as string).split('/');
     aux.pop();
-    gamepadFileName = `${aux.join('/')}/${gamepadFileName}`;
-    console.log('navigateToGamepad', gamepadFileName)
+    const gamepadFullURL = `${aux.join('/')}/${gamepadFileName}`;
+    console.log('navigateToGamepad', gamepadFullURL)
+    setCalculatedURL(gamepadFullURL)
     if (webViewRef.current) {
       const settingsScript = `
-        window.location.href = ${JSON.stringify(gamepadFileName)};
+        window.location.href = ${JSON.stringify(gamepadFullURL)};
         true;
       `
       webViewRef.current.injectJavaScript(settingsScript)
@@ -224,8 +248,7 @@ export default function FullScreen() {
     setModalVisible(false)
     const client = walletService.getCurrentWallet()
     if (!client) {
-      // TODO: open the login screen
-      console.log('TODO: open the login screen.')
+      console.log('Wallet not connected!')
       return
     }
     try {
@@ -267,20 +290,20 @@ export default function FullScreen() {
     }
   }
 
-  const handleMessage = async (event: WebViewMessageEvent) => {
+  const handleMessage = async (event: (WebViewMessageEvent | {nativeEvent:{ data: string}})) => {
+    const message = event.nativeEvent.data
+
+    if (!requireAuthentication(message)) return
+
     const client = walletService.getCurrentWallet()
     if (!client) {
-      // TODO: open the login screen
-      console.log('No client!')
-      setAddress('')
+      console.log('Wallet not connected!')
       return
     }
-    const message = event.nativeEvent.data // Get message from WebView
     if (message === 'openSettings') {
       setIsSettingsModalOpen(true)
       return
     }
-    // Alert.alert("Message from WebView", message);
     if (webViewRef.current) {
       const request = JSON.parse(message)
       console.log('Raw request', request)
@@ -317,6 +340,23 @@ export default function FullScreen() {
           webViewRef.current.injectJavaScript(eventScript)
         } catch (e) {
           console.error(e)
+          if (e instanceof Error) {
+            const response = {
+              reqId: currentTransaction.request.reqId,
+              result: {
+                error: {
+                  message: e.message,
+                }
+              },
+            };
+            const eventScript = `
+              window.ethereum.responseReceiver(${JSON.stringify(response)});
+              true; // To ensure execution is finished
+            `
+            if (webViewRef.current) {
+              webViewRef.current.injectJavaScript(eventScript)
+            }
+          }
         }
       } else if (request.method === 'on' && request.eventName === 'accountsChanged') {
         console.log('Register listener', request)
@@ -345,6 +385,15 @@ export default function FullScreen() {
         onMovementModeChange={handleMovementModeChange}
       />
 
+      <LoginModal
+        isVisible={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false)
+        }}
+        onLogin={handleLogin}
+        setShowCreateAccount={() => {/* handle create account */}}
+      />
+
       <StatusBar hidden />
       <GestureHandlerRootView>
         <ThemedView style={styles.container}>
@@ -352,7 +401,7 @@ export default function FullScreen() {
           <WebView
             ref={webViewRef}
             source={{
-              uri: (webviewURI as string) || DEFAULT_GAME_PAGE,
+              uri: calculatedURI || (webviewURI as string) || DEFAULT_GAME_PAGE,
             }}
             style={styles.webview}
             onLoadStart={() => setIsLoading(true)}

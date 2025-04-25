@@ -1,18 +1,21 @@
+import React, { useContext, useState, useEffect, useRef } from 'react'
 import LoginContext from '@/hooks/loginContext'
 import { Feather } from '@expo/vector-icons'
-import React, { useContext, useState } from 'react'
+import { useRouter } from 'expo-router'
 import {
-  Animated,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  StyleSheet,
-  TextInput,
-  TextStyle,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
+  ScrollView,
+  TextInput,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Keyboard,
+  Animated,
+  StyleSheet,
+  Platform,
+  LayoutChangeEvent,
   ViewStyle,
+  TextStyle,
 } from 'react-native'
 import zxcvbn from 'zxcvbn'
 import { ThemedText } from './ThemedText'
@@ -26,7 +29,6 @@ interface LoginModalProps {
   isVisible: boolean
   onClose: () => void
   onLogin: (credentials: LoginCredentials) => Promise<void>
-  setShowCreateAccount: (value: boolean) => void
 }
 
 interface Styles {
@@ -36,15 +38,13 @@ interface Styles {
   headerContainer: ViewStyle
   closeButton: ViewStyle
   card: ViewStyle
-  userIcon: ViewStyle
+  userIcon: TextStyle
   title: TextStyle
   subtitle: TextStyle
   inputContainer: ViewStyle
   inputIconContainer: ViewStyle
   input: TextStyle
   eyeIcon: ViewStyle
-  forgotPasswordButton: ViewStyle
-  forgotPasswordText: TextStyle
   errorContainer: ViewStyle
   error: TextStyle
   button: ViewStyle
@@ -55,14 +55,34 @@ interface Styles {
   signupLink: TextStyle
 }
 
-const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, setShowCreateAccount }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) => {
   const { email, setEmail } = useContext(LoginContext)
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  const buttonScale = new Animated.Value(1)
+  const router = useRouter()
+
+  const scrollRef = useRef<ScrollView>(null)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [emailY, setEmailY] = useState(0)
+  const [passwordY, setPasswordY] = useState(0)
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0)
+    })
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
+
+  const buttonScale = useRef(new Animated.Value(1)).current
 
   const handleButtonPress = (): void => {
     Animated.sequence([
@@ -80,10 +100,14 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
   }
 
   const handleClose = (): void => {
-    // setEmail('')
     setPassword('')
     setError('')
     onClose()
+  }
+
+  const handleSignUp = (): void => {
+    handleClose()
+    router.push('/createAccount')
   }
 
   const validateEmail = (email: string): boolean => {
@@ -91,12 +115,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
   }
 
   const validatePassword = (password: string): { passWordStrengthScore: number; timeToCrack: string | number } => {
-    const { score, calc_time, crack_times_seconds } = zxcvbn(password)
-    console.log('validatePassword', {
-      score,
-      calc_time,
-      timetoCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second,
-    })
+    const { score, crack_times_seconds } = zxcvbn(password)
     return { passWordStrengthScore: score, timeToCrack: crack_times_seconds.offline_slow_hashing_1e4_per_second }
   }
 
@@ -108,19 +127,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
       setError('Please enter your email')
       return
     }
-
     if (!validateEmail(email)) {
       setError('Please enter a valid email')
       return
     }
-
     if (!password) {
       setError('Please enter your password')
       return
     }
 
     const { passWordStrengthScore, timeToCrack } = validatePassword(password)
-
     if (passWordStrengthScore < 3) {
       setError(`Please enter a stronger password.\nThat password would take ${timeToCrack}s to be broken`)
       return
@@ -128,10 +144,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
 
     setIsLoading(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       await onLogin({ email, password })
       handleClose()
-    } catch (e) {
+    } catch {
       setError('Invalid email or password')
     } finally {
       setIsLoading(false)
@@ -139,92 +155,113 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
   }
 
   return (
-    <Modal visible={isVisible} transparent animationType="slide" onRequestClose={handleClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContainer}>
-        <TouchableWithoutFeedback onPress={handleClose}>
-          <View style={styles.overlay} />
-        </TouchableWithoutFeedback>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="slide"
+      onRequestClose={handleClose}
+      supportedOrientations={['landscape', 'landscape-right']}
+    >
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
 
+      <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <View style={styles.headerContainer}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Feather name="x" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: keyboardHeight }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.headerContainer}>
+              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <Feather name="x" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.card}>
-            <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
-            <ThemedText style={styles.title}>Welcome</ThemedText>
-            <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
-
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="mail" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#999"
+            <View style={styles.card}>
+              <Feather name="user" size={32} color="#4a90e2"
+                style={styles.userIcon}
               />
-            </View>
+              <ThemedText style={styles.title}>Welcome</ThemedText>
+              <ThemedText style={styles.subtitle}>Sign in to your account</ThemedText>
 
-            <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <Feather name="lock" size={20} color="#666" />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(!showPassword)}>
-                <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Feather name="alert-circle" size={16} color="#ff4d4d" />
-                <ThemedText style={styles.error}>{error}</ThemedText>
-              </View>
-            ) : null}
-
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity
-                style={[styles.button, isLoading && styles.buttonDisabled]}
-                onPress={handleLogin}
-                disabled={isLoading}
+              <View
+                style={styles.inputContainer}
+                onLayout={(e: LayoutChangeEvent) => setEmailY(e.nativeEvent.layout.y)}
               >
-                <ThemedText style={styles.buttonText}>{isLoading ? 'Signing in...' : 'Sign In'}</ThemedText>
-              </TouchableOpacity>
-            </Animated.View>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="mail" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() =>
+                    scrollRef.current?.scrollTo({ y: emailY - 20, animated: true })
+                  }
+                />
+              </View>
 
-            <View style={styles.signupContainer}>
-              <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
-              <TouchableOpacity
-                onPress={() => setShowCreateAccount(true)}
+              <View
+                style={styles.inputContainer}
+                onLayout={(e: LayoutChangeEvent) => setPasswordY(e.nativeEvent.layout.y)}
               >
-                <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
-              </TouchableOpacity>
-            </View>
+                <View style={styles.inputIconContainer}>
+                  <Feather name="lock" size={20} color="#666" />
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  onFocus={() =>
+                    scrollRef.current?.scrollTo({ y: passwordY - 20, animated: true })
+                  }
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-            {/* <View style={styles.signupContainer}>
-              <ThemedText style={styles.signupText}>
-                Don't have an account? Remember, use a strong UNIQUE password to create one.
-              </ThemedText>
-              <ThemedText style={styles.signupText}>
-                The password you choose is the only attachment between you and your account
-              </ThemedText>
-              <ThemedText style={styles.signupText}>There is no password recovery</ThemedText>
-            </View> */}
-          </View>
+              {error ? (
+                <View style={styles.errorContainer}>
+                  <Feather name="alert-circle" size={16} color="#ff4d4d" />
+                  <ThemedText style={styles.error}>{error}</ThemedText>
+                </View>
+              ) : null}
+
+              <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+                <TouchableOpacity
+                  style={[styles.button, isLoading && styles.buttonDisabled]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                >
+                  <ThemedText style={styles.buttonText}>
+                    {isLoading ? 'Signing in...' : 'Sign In'}
+                  </ThemedText>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <View style={styles.signupContainer}>
+                <ThemedText style={styles.signupText}>Don't have an account? </ThemedText>
+                <TouchableOpacity onPress={handleSignUp}>
+                  <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   )
 }
@@ -232,17 +269,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin, se
 const styles = StyleSheet.create<Styles>({
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#f5f6fa',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '90%',
+    maxHeight: '75%',
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
   },
   headerContainer: {
     padding: 16,
@@ -301,14 +341,7 @@ const styles = StyleSheet.create<Styles>({
   eyeIcon: {
     position: 'absolute',
     right: 16,
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
-  },
-  forgotPasswordText: {
-    color: '#4a90e2',
-    fontSize: 14,
+    top: 18,
   },
   errorContainer: {
     flexDirection: 'row',
@@ -339,15 +372,14 @@ const styles = StyleSheet.create<Styles>({
     fontWeight: '600',
   },
   signupContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 24,
   },
   signupText: {
-    color: '#000',
+    color: '#666',
     fontSize: 14,
-    textAlign: 'center',
   },
   signupLink: {
     color: '#4a90e2',
