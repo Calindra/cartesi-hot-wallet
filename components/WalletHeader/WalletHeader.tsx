@@ -90,10 +90,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
           ) : (
             <ThemedButton onPress={handleConnect} buttonText="Connect Wallet"></ThemedButton>
           )}
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => setShowSettings(true)}
-          >
+          <TouchableOpacity style={styles.settingsButton} onPress={() => setShowSettings(true)}>
             <Feather name="settings" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
@@ -101,9 +98,7 @@ export const WalletHeader: React.FC<WalletHeaderProps> = ({ setShowLogin, setSho
           <ThemedView style={[styles.showWalletDataContainer]}>
             <TouchableOpacity style={[styles.walletToClipboard]} onPress={copyToClipboard}>
               {copied ? (
-                <ThemedText style={[styles.addressText, { color: colors.text }]}>
-                  copied!
-                </ThemedText>
+                <ThemedText style={[styles.addressText, { color: colors.text }]}>copied!</ThemedText>
               ) : (
                 <ThemedText style={[styles.addressText, { color: colors.text }]}>
                   {walletAddressShortener(address)}
