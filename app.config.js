@@ -45,6 +45,14 @@ module.exports = {
           launchMode: 'most-recent',
         },
       ],
+      [
+        '@sentry/react-native/expo',
+        {
+          organization: 'calindra',
+          project: 'cartesi-hot-wallet',
+          url: 'https://sentry.io/',
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

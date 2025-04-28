@@ -1,21 +1,11 @@
-import React, { useState } from 'react';
-import {
-    Alert,
-    Animated,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { ThemedText } from '@/components/ThemedText';
 import ShortenedPrivacyPolicy from '@/components/PrivacyPolicy/ShortennedPrivacyPolicy';
+import { ThemedText } from '@/components/ThemedText';
+import { Feather } from '@expo/vector-icons';
+import * as Sentry from '@sentry/react-native';
 import { Stack, router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, Animated, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { formatTimeToCrack, getPasswordStrengthInfo, validateEmail, validatePassword } from '../utils/createAccountUtils';
-
 
 interface CreateAccountPageProps {
     onBack: () => void;
@@ -87,7 +77,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
 
         setIsLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             Alert.alert('Success', 'Account created successfully!');
             setEmail('');
             setPassword('');
@@ -95,6 +85,12 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
             setPrivacyPolicyAccepted(false);
             setError('');
         } catch (e) {
+            Sentry.captureException(error, {
+                // user: { id: '123', email: 'test1@example.com' }, // context info about user
+                tags: { feature: 'savePassword' },
+                extra: { debugData: '@createAccount.tsx - Error saving password' },
+                // fingerprint: ['custom-fingerprint'],
+            });
             Alert.alert('Error', 'Failed to create account');
         } finally {
             setIsLoading(false);
@@ -114,14 +110,8 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
                     </TouchableOpacity>
                 </View>
 
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    style={styles.keyboardAvoidingView}
-                >
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContainer}
-                        bounces={false}
-                    >
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardAvoidingView}>
+                    <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
                         <Feather name="lock" size={32} color="#4a90e2" style={styles.lockIcon} />
                         <ThemedText style={styles.title}>Create Account</ThemedText>
                         <ThemedText style={styles.subtitle}>Choose a strong password to secure your account</ThemedText>
@@ -211,10 +201,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
                         </View>
 
                         <View style={styles.privacyContainer}>
-                            <TouchableOpacity
-                                style={styles.checkbox}
-                                onPress={() => setPrivacyPolicyAccepted(!privacyPolicyAccepted)}
-                            >
+                            <TouchableOpacity style={styles.checkbox} onPress={() => setPrivacyPolicyAccepted(!privacyPolicyAccepted)}>
                                 {privacyPolicyAccepted ? (
                                     <Feather name="check-square" size={20} color="#4a90e2" />
                                 ) : (
@@ -224,10 +211,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
                             <View style={styles.privacyTextContainer}>
                                 <ThemedText style={styles.privacyText}>
                                     I accept the{' '}
-                                    <ThemedText
-                                        style={styles.privacyLink}
-                                        onPress={() => setShowPrivacyPolicy(true)}
-                                    >
+                                    <ThemedText style={styles.privacyLink} onPress={() => setShowPrivacyPolicy(true)}>
                                         Privacy Policy
                                     </ThemedText>
                                 </ThemedText>
@@ -236,10 +220,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
 
                         <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
                             <TouchableOpacity
-                                style={[
-                                    styles.button,
-                                    (isLoading || !privacyPolicyAccepted) && styles.buttonDisabled
-                                ]}
+                                style={[styles.button, (isLoading || !privacyPolicyAccepted) && styles.buttonDisabled]}
                                 onPress={savePassword}
                                 disabled={isLoading || !privacyPolicyAccepted}
                             >
@@ -248,10 +229,7 @@ export default function CreateAccountPage({ onBack }: CreateAccountPageProps) {
                         </Animated.View>
                     </ScrollView>
 
-                    <ShortenedPrivacyPolicy
-                        isVisible={showPrivacyPolicy}
-                        onClose={() => setShowPrivacyPolicy(false)}
-                    />
+                    <ShortenedPrivacyPolicy isVisible={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
                 </KeyboardAvoidingView>
             </View>
         </>

@@ -1,5 +1,7 @@
-import { Feather } from '@expo/vector-icons'
-import React, { useState, useEffect } from 'react'
+import { Feather } from '@expo/vector-icons';
+import * as Sentry from '@sentry/react-native';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
 import {
     KeyboardAvoidingView,
     Modal,
@@ -11,43 +13,37 @@ import {
     TouchableWithoutFeedback,
     View,
     ViewStyle,
-} from 'react-native'
-import { ThemedText } from '../ThemedText'
-import * as SecureStore from 'expo-secure-store';
+} from 'react-native';
+import { ThemedText } from '../ThemedText';
 
 interface Styles {
-    modalContainer: ViewStyle
-    overlay: ViewStyle
-    modalContent: ViewStyle
-    headerContainer: ViewStyle
-    closeButton: ViewStyle
-    card: ViewStyle
-    userIcon: ViewStyle
-    title: TextStyle
-    signupContainer: ViewStyle
-    signupText: TextStyle
-    agreeButton: ViewStyle
-    agreeButtonText: TextStyle
+    modalContainer: ViewStyle;
+    overlay: ViewStyle;
+    modalContent: ViewStyle;
+    headerContainer: ViewStyle;
+    closeButton: ViewStyle;
+    card: ViewStyle;
+    userIcon: ViewStyle;
+    title: TextStyle;
+    signupContainer: ViewStyle;
+    signupText: TextStyle;
+    agreeButton: ViewStyle;
+    agreeButtonText: TextStyle;
 }
 
 interface PrivacyPolicyProps {
-    onClose: () => void
-    onAccept?: () => void // Callback opcional que será chamado quando o usuário aceitar
-    shouldCheckPriorAgreement?: boolean // Controla se deve verificar aceitação prévia
+    onClose: () => void;
+    onAccept?: () => void; // Callback opcional que será chamado quando o usuário aceitar
+    shouldCheckPriorAgreement?: boolean; // Controla se deve verificar aceitação prévia
 }
 interface PrivacyPolicyComponent extends React.FC<PrivacyPolicyProps> {
     hasUserAgreed: () => Promise<boolean>;
     resetAgreement: () => Promise<void>;
 }
 
-
 const PRIVACY_POLICY_STORAGE_KEY = 'PrivacyPolicyAgreement';
 
-const PrivacyPolicy: PrivacyPolicyComponent = ({
-    onClose,
-    onAccept,
-    shouldCheckPriorAgreement = true
-}) => {
+const PrivacyPolicy: PrivacyPolicyComponent = ({ onClose, onAccept, shouldCheckPriorAgreement = true }) => {
     const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
 
@@ -70,15 +66,21 @@ const PrivacyPolicy: PrivacyPolicyComponent = ({
                     onAccept();
                 }
             }
-        } catch (error) {
-            console.error('Error checking privacy policy agreement:', error);
+        } catch (e) {
+            Sentry.captureException(e, {
+                // user: { id: '123', email: 'test1@example.com' }, // context info about user
+                tags: { feature: 'checkPriorAgreement' },
+                extra: { debugData: '@privacyPolicy.tsx - Error checking prior agreement' },
+                // fingerprint: ['custom-fingerprint'],
+            });
+            console.error('Error checking privacy policy agreement:', e);
         }
     };
 
     const savePrivacyPolicyAgreement = async () => {
         try {
             await SecureStore.setItemAsync(PRIVACY_POLICY_STORAGE_KEY, 'true');
-            console.log("Privacy policy agreement saved successfully");
+            console.log('Privacy policy agreement saved successfully');
 
             // Notifica sobre a aceitação
             if (onAccept) {
@@ -86,8 +88,14 @@ const PrivacyPolicy: PrivacyPolicyComponent = ({
             }
 
             handleClose();
-        } catch (error) {
-            console.error('Error saving privacy policy agreement:', error);
+        } catch (e) {
+            Sentry.captureException(e, {
+                // user: { id: '123', email: 'test1@example.com' }, // context info about user
+                tags: { feature: 'savePrivacyPolicyAgreement' },
+                extra: { debugData: '@privacyPolicy.tsx - Error saving privacy policy agreement' },
+                // fingerprint: ['custom-fingerprint'],
+            });
+            console.error('Error saving privacy policy agreement:', e);
         }
     };
 
@@ -169,31 +177,20 @@ If you have any questions about this Privacy Policy or how we handle your inform
                 </TouchableWithoutFeedback>
 
                 <View style={styles.modalContent}>
-                    <View style={styles.headerContainer}>
-                        {/* Você pode adicionar um botão de fechar aqui se quiser */}
-                    </View>
+                    <View style={styles.headerContainer}>{/* Você pode adicionar um botão de fechar aqui se quiser */}</View>
 
                     <View style={styles.card}>
                         <Feather name="user" size={32} color="#4a90e2" style={styles.userIcon as any} />
                         <ThemedText style={styles.title}>Privacy Policy</ThemedText>
                         <View style={{ flex: 1 }}>
-                            <ScrollView
-                                onScroll={handleScroll}
-                                scrollEventThrottle={100}
-                                showsVerticalScrollIndicator
-                            >
+                            <ScrollView onScroll={handleScroll} scrollEventThrottle={100} showsVerticalScrollIndicator>
                                 <View style={styles.signupContainer}>
-                                    <ThemedText style={styles.signupText}>
-                                        {PrivacyPolicyContent}
-                                    </ThemedText>
+                                    <ThemedText style={styles.signupText}>{PrivacyPolicyContent}</ThemedText>
                                 </View>
                             </ScrollView>
                         </View>
                         <TouchableOpacity
-                            style={[
-                                styles.agreeButton,
-                                { opacity: hasScrolledToEnd ? 1 : 0.5 }
-                            ]}
+                            style={[styles.agreeButton, { opacity: hasScrolledToEnd ? 1 : 0.5 }]}
                             onPress={savePrivacyPolicyAgreement}
                             disabled={!hasScrolledToEnd}
                         >
@@ -211,8 +208,14 @@ PrivacyPolicy.hasUserAgreed = async (): Promise<boolean> => {
     try {
         const storedValue = await SecureStore.getItemAsync(PRIVACY_POLICY_STORAGE_KEY);
         return storedValue === 'true';
-    } catch (error) {
-        console.error('Error checking privacy policy agreement:', error);
+    } catch (e) {
+        Sentry.captureException(e, {
+            // user: { id: '123', email: 'test1@example.com' }, // context info about user
+            tags: { feature: 'hasUserAgreed' },
+            extra: { debugData: '@privacyPolicy.tsx - Error checking privacy policy agreement' },
+            // fingerprint: ['custom-fingerprint'],
+        });
+        console.error('Error checking privacy policy agreement:', e);
         return false;
     }
 };
@@ -221,9 +224,15 @@ PrivacyPolicy.hasUserAgreed = async (): Promise<boolean> => {
 PrivacyPolicy.resetAgreement = async (): Promise<void> => {
     try {
         await SecureStore.deleteItemAsync(PRIVACY_POLICY_STORAGE_KEY);
-        console.log("Privacy policy agreement reset successfully");
-    } catch (error) {
-        console.error('Error resetting privacy policy agreement:', error);
+        console.log('Privacy policy agreement reset successfully');
+    } catch (e) {
+        Sentry.captureException(e, {
+            // user: { id: '123', email: 'test1@example.com' }, // context info about user
+            tags: { feature: 'resetAgreement' },
+            extra: { debugData: '@privacyPolicy.tsx - Error resetting privacy policy agreement' },
+            // fingerprint: ['custom-fingerprint'],
+        });
+        console.error('Error resetting privacy policy agreement:', e);
     }
 };
 
