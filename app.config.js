@@ -39,6 +39,12 @@ module.exports = {
           backgroundColor: '#a435f1',
         },
       ],
+      [
+        'expo-dev-client',
+        {
+          launchMode: 'most-recent',
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
