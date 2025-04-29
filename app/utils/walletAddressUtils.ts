@@ -5,3 +5,7 @@ export const walletAddressShortener = (address: string) => {
 export const emailShortener = (email: string) => {
   return `${email.substring(0, 3)}...${email.substring(email.length - 9)}`
 }
+
+export default function hello() {
+  console.log('I only exist so that the logs dont log a warning')
+}

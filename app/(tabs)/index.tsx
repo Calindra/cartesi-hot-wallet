@@ -1,13 +1,12 @@
 import CustomGrid from '@/components/CustomGrid/CustomGrid'
 import ParallaxScrollViewWithWallet from '@/components/ParallaxScrollViewWithWallet'
-import { IconSymbol } from '@/components/ui/IconSymbol'
 import { GameData } from '@/src/model/GameData'
+import * as NavigationBar from 'expo-navigation-bar'
 import { usePathname } from 'expo-router'
 import * as ScreenOrientation from 'expo-screen-orientation'
-import * as NavigationBar from 'expo-navigation-bar'
 import React, { useEffect, useState } from 'react'
-import { Dimensions, Platform, ScrollView, StyleSheet } from 'react-native'
-
+import { Dimensions, Image, Platform, ScrollView, StyleSheet } from 'react-native'
+const logo = require('../../assets/images/banner-cartesi-app-1920x1920px.jpg')
 
 // TODO: could come from an API
 const gameData: GameData[] = [
@@ -29,7 +28,8 @@ const gameData: GameData[] = [
     // gameURL: 'https://mainnet-v5.rives.io/data/cartridges/721f735bbca3',
     gameURL: 'https://ipfs.io/ipfs/bafybeicrcve7x2nzwewuwy4ixdgddfvtif4jlzingbejydw5ekfawk2ycu/721f735bbca3',
     webview: false,
-    webviewURI: 'https://ipfs.io/ipfs/bafybeibw4uavblwc3ikmpk6rghtlhxj6sg43ej753zzaxd3gcslzwn5g7q/doom-with-arrows.html',
+    webviewURI:
+      'https://ipfs.io/ipfs/bafybeibw4uavblwc3ikmpk6rghtlhxj6sg43ej753zzaxd3gcslzwn5g7q/doom-with-arrows.html',
     tiltGamepad: 'doom-smooth-turn.html',
     arrowGamepad: 'doom-with-arrows.html',
   },
@@ -53,6 +53,8 @@ const gameData: GameData[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAUVBMVEUAAAD////Fzdtoa3IYFCU1NliLl7Ze6ekokNwYMacFMjkAX0EIsjtH9kHo/3X7voI3PcGxKSdHcyLSUFA9lzyycnFkkzV9gL+Vylm6urnS0tGwGu1IAAAEbUlEQVR4nO2d0XabMBBE0z/oSV+S/v+HJsTBBlsSO2IRy+zcl7j2CLwXAW4rb97+JOcNShMiAVCaEAmA0oRIAJQmRAKgtNtef3c7/Xy7A2zA8a1Aabe9SsD65/PjgUgAlHbbqwSsfz4/HshZAh4XvqQXweQC7nv/EQANcX8LUNp97xIgARKgi2BmAQGQAChNiARAaUIkAErv2tPiTnd7XHtmem7Y+xo7A5Z7ey10foZcwP2YpxPQPAVurxaeP/xdQWmvvT32WjspyE+BlAKqd4GfJ58nP+kMCIgEQGlCJABKEyIBUJoQCYDShEgAlCZEAqA0IWEE/PsGGuCEBEDpw5jKP0dBCAFz+UkFPMo/Q0EIAbOE2+OxSACU3sHfb8qvLKf/Q0A978sgAVM59YJez/923pMhAm7ltAU8H30iAXM5LQHLD0LbeU/CzIDlKRBYwPs7FL9jEWDPezJIQPuqXroBhhWwR0HtlfIngIACpvIlQAL6L4S1V9IL8Mn3AQiYy5cACbCPiU+XACYFEmANLstPOgM4rwJGAevjn1yAbcRV0AywxSSggG1kdCTAHk0roHT0JYBGggS0X24VLwHZBbRHXoUOAe0RV0O3QVuMdxZoqSyUJkQCoDQHn7/8/CGbgLn4u4TsAj4zCXgpXgKSCZhJL2CFBEBpQiQAShMiAVCaEAmA0oRIAJQmRAKgNCESAKUJkQAoTYgEQGlCJABKEyIBUJoQCYDShEgAlCZkoICYS6skAErvIubyumECoq4vlAAovYOoa0wlAEp3E3eVsQRA6W4kIOxSewmA0p1E/rLF8NtgQgGxv24zWAA0cAiaAVC6CwkoAG3gUCQASneTVkDp6EtAKAkSAKUhWsVLgEEA2lu6rxf1SQK2R6PdxXu7kQ8WYB2L9pfv70cf8jaI/oYBNL8k6N8FaGZAPwTXgL0EuAusOg2cgE8v6o+P1piqgJdOAydwioDid8wvLqClYCWgVvxZEjwETOVLgFXARITCZ/wE1BWEXiaXXsB+5vIlQAJqiTQCagokYHsj12VZftIZsH0VIBawPv7JBdRTmgGmbV0SCSjwmpIA6+auSVoBpaMvAUUJEmDe5mVoFS8B2QW8ppMIqKd1G7Ru8nrYZgH9P4hsIQFQmhAJgNKESACUJkQCoDQhEgClCZEAKH0S/3+BBhkJL2Au/igJlxPgLSK0gFrxnhIkAEqfxFHFT+g2CKUJkQAoTYgEQGlCJABKE9IhgOlXr0tAnwAmBbAArA9AfCQASn+D9oKIjgRA6cDdYXuRACgtAWgzlPhIABLG2+HEp/s2mFBAT0Ok+HQKsI+KjmaAPSoBBeyjoyIBUJrwNDAKKB19CaCQIAHbkVbxEpBdwPbo6HQK2B51FXQbtEc5Z4H+exxKEyIBUNrIqsezYWlnX09oHw4QsOjybVrf2tsV3Ad3Aas+74ZVzv194X1wFrDo9F9d472UsMifxHEzwCSAbgZMPBXUKL6YH8zxd4ED8p4c9DnApy/8CL4AltzQWIi07CcAAAAASUVORK5CYII=',
     gameURL: 'https://mainnet-v5.rives.io/data/cartridges/a612d46cd43f',
     webview: true,
+    webviewURI:
+      'https://ipfs.io/ipfs/bafybeibw4uavblwc3ikmpk6rghtlhxj6sg43ej753zzaxd3gcslzwn5g7q/doom-with-arrows.html',
     tiltGamepad: 'gamepad-tilt.html',
     arrowGamepad: 'gamepad.html',
   },
@@ -64,6 +66,8 @@ const gameData: GameData[] = [
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOAAAAEIBAMAAAC0Y+WJAAAAHlBMVEVmM////////zP/uP//uJf/uEf/l0czmf//MzMAAABHXg75AAAEaElEQVR42u2csW7jOBCGuaVKI1isa3fq7qBq+zQur3CRF1gg5VVGSjcB3ekSJxHf9ijjCM8RvzMeghqdLvNBgaxZip8lc0iaWMup0wRV+hmEfeF9KTtvFIYCRmEowIQmXI7wtJX9JaH8PFWhNZrFCS0Pc2iMkqUFBNeXCx2BxihUyJVBsSRMtymBYnmcL4NiX0V4ur/fTipMjiS8j0wsTI7/jJA0fwqN82XmF36Zz1A/Laxrqy+UD09MGVxf+QCcKB2AFTHhpMI9gR6nyL/jefkRdEz3qkKQh7QCckyFJJ6XH+tAx3Q/pxDeQnCconx5eEtNqCAkr8Bxgi8/rxDn4eRCnIfuDKnARTJhKsWVD6mEK83D9AqU79N1jFOPJGwuZZLDhHrCPjvmWykWpn+bU4iHJ4eENC0alEaZkCZPYMbDwF1hw19hdh9wHgZCXgHVhoZtZKDWmYUmlE8T5xeCtCBL/kAonSamWHo9m1C+1CyIU2oLTWjC07ZceNp+JnQAKqRxJHQEKnSAUUj8tZe+ADMIEbWEuHJAU0cIm9XXFTJp4SJMWpQLg4BiIdOjvHY/ma6wipD4OmJUEHYjisLXs/CnnvCv1d3vqztFYf/t7rdv9YWnbYGwVh56Hwivq65bdbWFtAIf0Ww0wyg8Kgr9mf+z8LBax432NLEv7YKKMEF19fPw4NZxg4Jp8tA7H7eAhuFEgZBvNE0K9t0/NNenHgsVXrulImEGqmA4ej8cYQXgDconwuAWRV0oECJuEkbqCTH0K5dEmJ2LCJB0EoUX4nPxLcXIhZRlCtNSXWK3m1aYLznuIlMKP0bh0yX0NgofJhTmq6G7M5WEp61cSM+tIvxz9SNul9Afq+9xq5mHciGlgtD9iBsRuu9xm7LRuH3cyGfodnGbvZWaUJAWH0/7/QftaR52u7cHQVrIB+CLLimFA7D6FENfiKgldIiyCsrfoEh4lSUKwTqN+wQqXP56KaTCLTWhCfXTwvLQhCZcdh7KB2Cb0ygKEaGOEFcOq6kjhCVnEPa3fl377LkYt35dY/8DD9+jSM5d0m+5TWhCey4GxRqNCe25GPZcDBNG7Pf4tzT5W1OH/z2+LKn5zgEnfpVu62Wz2bRcPTWFmzmEbD30QRwVhO1VIXo+TQVhuCpMjrrCViQUTQER6QJxPZMIW064+M9w0/LCummx4dNCv6dZYl9KkQrz5kzjGFAG1kOF3JyTvobQMszcdRTi6QN+jZGcWyI0oQl7adOm66XSlIKJzyUvffeyTmM5vyE1oQkly5TyOP3TF1qjMeGi8pARSoctyXqpfKDF5QXrpdKphOA8udCEJmTSQr5eioF5iJGvl0IW9/xSE5rwtNX50xdaozEhxoROkVEYVJlBqE5QZk7hJkL3NfkFhC+jqE37yj5l4a/3QIXU2JJ9Nd5DJiTGlu7rMPjH8IiF0dTSfR38s38Pmlfo/fHZa36GBz88+6NiK/XrwasKBz+siVCjpxkOWDgd3s/aeSvzN2F6ML6HUT+FAAAAAElFTkSuQmCC',
     gameURL: 'https://mainnet-v5.rives.io/data/cartridges/bba40250eaeb',
     webview: true,
+    webviewURI:
+      'https://ipfs.io/ipfs/bafybeibw4uavblwc3ikmpk6rghtlhxj6sg43ej753zzaxd3gcslzwn5g7q/doom-with-arrows.html',
     tiltGamepad: 'gamepad-tilt.html',
     arrowGamepad: 'gamepad.html',
   },
@@ -107,11 +111,10 @@ export default function Home() {
     <ParallaxScrollViewWithWallet
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+        <Image
+          source={logo}
+          style={[styles.headerImage, { width: '120%', height: 260 }]} // Ajuste conforme necessário
+          resizeMode="cover"
         />
       }
     >
