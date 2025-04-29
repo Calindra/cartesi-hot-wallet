@@ -1,16 +1,17 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { ThemedView } from '@/components/ThemedView';
-import { walletService } from '@/src/services/WalletService';
-import { Stack } from 'expo-router';
-import React, { useContext, useState, useEffect } from 'react';
-import { Alert, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, View, TouchableOpacity } from 'react-native';
-import { Hex, parseEther } from 'viem';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
 import LoginContext from '@/hooks/loginContext';
+import { walletService } from '@/src/services/WalletService';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
+import * as Sentry from '@sentry/react-native';
+import { Stack } from 'expo-router';
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, Keyboard, KeyboardAvoidingView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Hex, parseEther } from 'viem';
 
 export default function SendEthScreen() {
-    const { address } = useContext(LoginContext)
+    const { address } = useContext(LoginContext);
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [balance, setBalance] = useState('');
@@ -29,7 +30,7 @@ export default function SendEthScreen() {
 
     const sendEth = async () => {
         if (!recipient || !amount) {
-            console.log('Please fill in all fields...')
+            console.log('Please fill in all fields...');
             Alert.alert('Please fill in all fields');
             return;
         }
@@ -37,9 +38,9 @@ export default function SendEthScreen() {
         setIsSending(true);
 
         try {
-            const walletClient = walletService.getCurrentWallet()
+            const walletClient = walletService.getCurrentWallet();
             if (!walletClient) {
-                console.log('There is no current wallet')
+                console.log('There is no current wallet');
                 setIsSending(false);
                 return;
             }
@@ -51,9 +52,15 @@ export default function SendEthScreen() {
 
             Alert.alert('Transaction Sent!', `Tx Hash: ${txHash}`);
             await getWalletBalance(address as `0x${string}`); // Refresh balance
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', error instanceof Error ? error.message : 'Something went wrong');
+        } catch (e) {
+            console.error(e);
+            Sentry.captureException(e, {
+                // user: { id: '123', email: 'test1@example.com' }, // context info about user
+                tags: { feature: 'sendEth' },
+                extra: { debugData: '@send.tsx - Error sending Eth' },
+                // fingerprint: ['custom-fingerprint'],
+            });
+            Alert.alert('Error', e instanceof Error ? e.message : 'Something went wrong');
         } finally {
             setIsSending(false);
         }
@@ -62,10 +69,7 @@ export default function SendEthScreen() {
     return (
         <>
             <Stack.Screen options={{ headerTitle: 'Send', headerBackTitle: 'Home' }} />
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior="height"
-            >
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ThemedView style={styles.container}>
                         <MaterialIcons name="send" size={48} color="#4a90e2" style={styles.icon} />
@@ -96,17 +100,17 @@ export default function SendEthScreen() {
                                 style={styles.input}
                                 placeholder="e.g. 0.01"
                                 keyboardType="decimal-pad"
-                                onChangeText={(text) => setAmount(text.replace(',', '.'))}
+                                onChangeText={text => setAmount(text.replace(',', '.'))}
                                 value={amount}
                                 placeholderTextColor="#999"
                             />
                         </View>
 
-                        <TouchableOpacity 
-                            style={[styles.button, isSending && styles.buttonDisabled]} 
+                        <TouchableOpacity
+                            style={[styles.button, isSending && styles.buttonDisabled]}
                             onPress={() => {
-                                console.log('Send ETH')
-                                sendEth()
+                                console.log('Send ETH');
+                                sendEth();
                             }}
                             disabled={isSending}
                         >
