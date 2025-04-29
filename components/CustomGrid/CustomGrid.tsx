@@ -1,7 +1,6 @@
 import GameCartridge from '@/components/GameCartridge/GameCartridge';
 import LoginContext from '@/hooks/loginContext';
 import { GameData } from '@/src/model/GameData';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Checkbox from 'expo-checkbox';
 import { Link, router } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
@@ -20,29 +19,11 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
     const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
     const [submitScoreWarningModalVisible, setSubmitScoreWarningModalVisible] = useState(false);
     const [selectedGame, setSelectedGame] = useState<GameData | null>(null);
-    const [localGameData, setLocalGameData] = useState(gameData);
     const [dontShowAgain, setDontShowAgain] = useState(false);
 
-    // Set of game IDs for which the user has chosen to skip the warning
+    // State to store game IDs for which the user has chosen to skip the warning
+    // This will reset when the app is restarted
     const [skippedWarningGames, setSkippedWarningGames] = useState<Set<string>>(new Set());
-
-    // Load the skipped games from AsyncStorage on mount
-    useEffect(() => {
-        const loadSkippedWarnings = async () => {
-            try {
-                if (!AsyncStorage) return;
-                const skippedGamesJson = await AsyncStorage.getItem('skippedLoginWarningGames');
-                if (skippedGamesJson) {
-                    const skippedGamesArray = JSON.parse(skippedGamesJson);
-                    setSkippedWarningGames(new Set(skippedGamesArray));
-                }
-            } catch (error) {
-                console.error('Error loading skipped warnings:', error);
-            }
-        };
-
-        loadSkippedWarnings();
-    }, []);
 
     // Update window width on device rotation or resize
     useEffect(() => {
@@ -92,20 +73,14 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
     };
 
     // Function to handle "Play Anyway" with optional don't show again
-    const handlePlayAnyway = async () => {
+    const handlePlayAnyway = () => {
         if (!selectedGame) return;
 
         if (dontShowAgain) {
-            // Add to skipped warnings and save to AsyncStorage
+            // Add to skipped warnings set in memory
             const updatedSkippedGames = new Set(skippedWarningGames);
             updatedSkippedGames.add(selectedGame.id);
             setSkippedWarningGames(updatedSkippedGames);
-
-            try {
-                await AsyncStorage.setItem('skippedLoginWarningGames', JSON.stringify(Array.from(updatedSkippedGames)));
-            } catch (error) {
-                console.error('Error saving skipped warnings:', error);
-            }
         }
 
         // Close modal and navigate
@@ -118,8 +93,8 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
         const columnCount = getNumberOfColumns();
         const rows = [];
 
-        for (let i = 0; i < localGameData.length; i += columnCount) {
-            const rowItems = localGameData.slice(i, i + columnCount);
+        for (let i = 0; i < gameData.length; i += columnCount) {
+            const rowItems = gameData.slice(i, i + columnCount);
 
             rows.push(
                 <View key={`row-${i}`} style={styles.row}>
@@ -172,10 +147,9 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Login Required to Submit Score</Text>
                         <Text style={styles.modalText}>
-                            You need to be logged in to submit scores for this game. You can still play, casually, without login in.
+                            You need to be logged in to submit scores for this game. You can still play, casually, without logging in.
                         </Text>
 
-                        {/* Don't show again checkbox */}
                         <TouchableOpacity style={styles.checkboxContainer} onPress={() => setDontShowAgain(!dontShowAgain)}>
                             <Checkbox
                                 value={dontShowAgain}
@@ -183,7 +157,7 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
                                 style={styles.checkbox}
                                 color={dontShowAgain ? '#870b68' : undefined}
                             />
-                            <Text style={styles.checkboxLabel}>Don't show this warning again for this game</Text>
+                            <Text style={styles.checkboxLabel}>Don't show this again for this game</Text>
                         </TouchableOpacity>
 
                         <View style={styles.modalButtons}>
