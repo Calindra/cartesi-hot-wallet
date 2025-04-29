@@ -87,6 +87,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalContent: {
+        minWidth: 200,
+        minHeight: 250,
         backgroundColor: '#FFF',
         padding: 20,
         borderRadius: 10,
