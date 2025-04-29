@@ -1,104 +1,48 @@
-import React, { useState } from 'react'
-import { Image, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native'
-import { ThemedText } from '../ThemedText'
-import { Feather } from '@expo/vector-icons'
-
-import { Colors } from '@/constants/Colors'
-import { Modal, Text } from 'react-native'
-import LeaderboardModal from '../LeaderboardModal'
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
+import { ThemedText } from '../ThemedText';
 
 
-interface GameCardProps {
-  imageUrl: string
-  title: string
-  author: string
+export interface GameCardProps {
+  imageUrl: string;
+  title: string;
+  author: string;
 }
 
-const cartridgeBackground = require('../../assets/images/cartridge.png') // Make sure to place the cartridge.png in the same directory
-const rivesLogo = require('../../assets/images/logo-rives.png')
+const cartridgeBackground = require('../../assets/images/cartridge.png');
+const rivesLogo = require('../../assets/images/logo-rives.png');
 
 const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Cartesi Foundation' }) => {
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
-  const colorScheme = useColorScheme()
-  const colors = Colors[colorScheme ?? 'light']
-
-  const toggleDropdown = () => setShowDropdown(prev => !prev)
 
   return (
-
-    <View style={styles.cartridgeContainer}>
-      {/* Background */}
-      <View style={styles.backgroundContainer}>
-        <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
-      </View>
-
-      {/* Main content */}
-      <View style={styles.contentContainer}>
-        <Image source={rivesLogo} style={styles.rivesLogo} />
-        <View style={styles.imageContainer}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.gameImage} resizeMode="cover" />
-          ) : (
-            <View style={styles.placeholderImage} />
-          )}
+    <View style={{ alignItems: 'center' }}>
+      <View style={styles.cartridgeContainer}>
+        <View style={styles.backgroundContainer}>
+          <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
         </View>
-        <View style={styles.textContainer}>
-          <ThemedText style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-            {title}
-          </ThemedText>
-          <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
-            By {author}
-          </ThemedText>
-        </View>
-      </View>
 
-      <View>
-        <TouchableOpacity style={styles.settingsButton} onPress={toggleDropdown}>
-          <Feather name="settings" size={14} color={colors.text} />
-        </TouchableOpacity>
-
-
-        <Modal
-          visible={showDropdown}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowDropdown(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{title}</Text>
-
-              {title === 'Free Doom' &&
-                <TouchableOpacity
-                  style={styles.dropdownItem}
-                  onPress={() => {
-                    setShowDropdown(false)
-                    setShowLeaderboard(true)
-                  }}
-                >
-                  <ThemedText style={styles.dropdownText}>Leaderboard</ThemedText>
-                </TouchableOpacity>
-              }
-              <TouchableOpacity style={styles.dropdownItem} onPress={() => console.log('Controls')}>
-                <ThemedText style={styles.dropdownText}>Controls</ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => setShowDropdown(false)}>
-                <ThemedText style={{ marginTop: 16, color: '#E44' }}>Close</ThemedText>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.contentContainer}>
+          <Image source={rivesLogo} style={styles.rivesLogo} />
+          <View style={styles.imageContainer}>
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.gameImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.placeholderImage} />
+            )}
           </View>
-        </Modal>
-        <LeaderboardModal
-          visible={showLeaderboard}
-          onClose={() => setShowLeaderboard(false)}
-        />
+          <View style={styles.textContainer}>
+            <ThemedText style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+              {title}
+            </ThemedText>
+            <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
+              By {author}
+            </ThemedText>
+          </View>
+        </View>
       </View>
     </View>
-  )
-}
-
+  );
+};
 
 const styles = StyleSheet.create({
   cartridgeContainer: {
@@ -153,24 +97,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   settingsButton: {
-    marginLeft: 16,
-    padding: 15, // increases touch area
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-
-  dropdown: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#FFF',
+    marginTop: 8,
+    backgroundColor: 'red',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    elevation: 5,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    zIndex: 10,
+    zIndex: 10, // Ensure button stays on top
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -198,14 +131,11 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     alignItems: 'center',
   },
-
   dropdownText: {
     fontSize: 16,
     color: '#333',
     textAlign: 'center',
-  }
+  },
+});
 
-
-})
-
-export default GameCartridge
+export default GameCartridge;
