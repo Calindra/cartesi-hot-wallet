@@ -1,10 +1,12 @@
-const { getDefaultConfig } = require("expo/metro-config");
+// const { getDefaultConfig } = require("expo/metro-config");
+const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 
-const defaultConfig = getDefaultConfig(__dirname);
+// const defaultConfig = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname)
 
-defaultConfig.resolver.extraNodeModules = {
-  crypto: require.resolve("react-native-polyfill-globals"),
-  stream: require.resolve("stream-browserify"),
-};
+config.resolver.extraNodeModules = {
+  crypto: require.resolve('react-native-polyfill-globals'),
+  stream: require.resolve('stream-browserify'),
+}
 
-module.exports = defaultConfig;
+module.exports = config

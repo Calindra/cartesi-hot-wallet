@@ -40,3 +40,4 @@ app-example
 # locks
 package-lock.json
 yarn.lock
+.env
