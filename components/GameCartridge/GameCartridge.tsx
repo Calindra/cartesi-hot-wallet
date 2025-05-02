@@ -1,43 +1,48 @@
-import React from 'react'
-import { Image, StyleSheet, View } from 'react-native'
-import { ThemedText } from '../ThemedText'
+import React from 'react';
+import { Image, StyleSheet, View } from 'react-native';
+import { ThemedText } from '../ThemedText';
 
-interface GameCardProps {
-  imageUrl: string
-  title: string
-  author: string
+
+export interface GameCardProps {
+  imageUrl: string;
+  title: string;
+  author: string;
 }
 
-const cartridgeBackground = require('../../assets/images/cartridge.png') // Make sure to place the cartridge.png in the same directory
-const rivesLogo = require('../../assets/images/logo-rives.png')
+const cartridgeBackground = require('../../assets/images/cartridge.png');
+const rivesLogo = require('../../assets/images/logo-rives.png');
 
 const GameCartridge: React.FC<GameCardProps> = ({ imageUrl, title, author = 'Cartesi Foundation' }) => {
+
   return (
-    <View style={styles.cartridgeContainer}>
-      <View style={styles.backgroundContainer}>
-        <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
-      </View>
-      <View style={styles.contentContainer}>
-        <Image source={rivesLogo} style={styles.rivesLogo} />
-        <View style={styles.imageContainer}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.gameImage} resizeMode="cover" />
-          ) : (
-            <View style={styles.placeholderImage} />
-          )}
+    <View style={{ alignItems: 'center' }}>
+      <View style={styles.cartridgeContainer}>
+        <View style={styles.backgroundContainer}>
+          <Image source={cartridgeBackground} style={styles.backgroundImage} resizeMode="cover" />
         </View>
-        <View style={styles.textContainer}>
-          <ThemedText style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-            {title}
-          </ThemedText>
-          <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
-            By {author}
-          </ThemedText>
+
+        <View style={styles.contentContainer}>
+          <Image source={rivesLogo} style={styles.rivesLogo} />
+          <View style={styles.imageContainer}>
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.gameImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.placeholderImage} />
+            )}
+          </View>
+          <View style={styles.textContainer}>
+            <ThemedText style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+              {title}
+            </ThemedText>
+            <ThemedText style={styles.author} numberOfLines={1} ellipsizeMode="tail">
+              By {author}
+            </ThemedText>
+          </View>
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   cartridgeContainer: {
@@ -91,6 +96,46 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 14,
   },
-})
+  settingsButton: {
+    marginTop: 8,
+    backgroundColor: 'red',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    zIndex: 10, // Ensure button stays on top
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderRadius: 10,
+    width: 250,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f2f2f2',
+    borderRadius: 8,
+    marginVertical: 4,
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+  },
+});
 
-export default GameCartridge
+export default GameCartridge;
