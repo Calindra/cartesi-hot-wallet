@@ -59,7 +59,6 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
                 />
               </Link>
 
-              {/* Settings Button under the GameCartridge */}
               <SettingsButton title={item.title} />
             </View>
           ))}
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 8,
-    paddingHorizontal: 8, // Add horizontal padding
+    paddingHorizontal: 8,
   },
   row: {
     flexDirection: 'row',
@@ -92,7 +91,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 6,
     alignItems: 'center',
-    flexDirection: 'column', // Aligning the GameCartridge and SettingsButton vertically
+    flexDirection: 'column',
   },
 })
 
