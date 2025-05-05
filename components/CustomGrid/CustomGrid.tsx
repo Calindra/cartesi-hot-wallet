@@ -6,6 +6,7 @@ import Checkbox from 'expo-checkbox';
 import { Link, router } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import SettingsButton from '../SettingsButton';
 import { ThemedButton } from '../ThemedButton';
 
 interface CustomGridProps {
@@ -113,21 +114,23 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
                 <View key={`row-${i}`} style={styles.row}>
                     {rowItems.map(item =>
                         address ? (
-                            <Link
-                                key={item.id}
-                                href={{
-                                    pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
-                                    params: {
-                                        gameURL: item.gameURL,
-                                        webviewURI: item.webviewURI,
-                                        arrowGamepad: item.arrowGamepad,
-                                        tiltGamepad: item.tiltGamepad,
-                                    },
-                                }}
-                                style={styles.columnContainer}
-                            >
-                                <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
-                            </Link>
+                            <View key={item.id} style={styles.columnContainer}>
+                                <Link
+                                    href={{
+                                        pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
+                                        params: {
+                                            gameURL: item.gameURL,
+                                            webviewURI: item.webviewURI,
+                                            arrowGamepad: item.arrowGamepad,
+                                            tiltGamepad: item.tiltGamepad,
+                                        },
+                                    }}
+                                    style={styles.columnContainer}
+                                >
+                                    <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
+                                </Link>
+                                <SettingsButton title={item.title} />
+                            </View>
                         ) : (
                             <TouchableOpacity key={item.id} style={styles.columnContainer} onPress={() => handleGamePress(item)}>
                                 <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
@@ -206,6 +209,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 6,
         alignItems: 'center',
         width: '100%',
+        flexDirection: 'column',
     },
     // Modal styles
     modalOverlay: {
