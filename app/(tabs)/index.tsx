@@ -116,7 +116,7 @@ export default function Home() {
             }
         >
             <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
-                <CustomGrid data={gameData} />
+                <CustomGrid gameData={gameData} />
             </ScrollView>
         </ParallaxScrollViewWithWallet>
     );

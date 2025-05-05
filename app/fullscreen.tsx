@@ -1,6 +1,6 @@
 import LoginModal, { LoginCredentials } from '@/components/Login';
 import SettingsModal from '@/components/SettingsModal';
-import { ThemedText } from '@/components/ThemedText';
+import SubmitScoreModalNotVisible from '@/components/SubmitScoreModal';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import LoginContext from '@/hooks/loginContext';
@@ -13,18 +13,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import {
-    ActivityIndicator,
-    Animated,
-    Dimensions,
-    Modal,
-    Platform,
-    Pressable,
-    StatusBar,
-    StyleSheet,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Platform, StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 
@@ -435,28 +424,8 @@ export default function FullScreen() {
                         webviewDebuggingEnabled
                     />
                     {isLoading && <ActivityIndicator style={styles.loader} size="large" color={colors.tint} />}
-                    <Modal
-                        visible={modalVisible}
-                        transparent={true}
-                        animationType="slide"
-                        onRequestClose={() => setModalVisible(false)}
-                        supportedOrientations={['portrait', 'landscape-right']} // works=true
-                    >
-                        <TouchableOpacity style={styles.modalContainer} activeOpacity={1} onPress={() => setModalVisible(false)}>
-                            <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-                                <ThemedText style={styles.modalTitle}>Confirm Transaction</ThemedText>
-                                <ThemedText style={styles.modalMessage}>Are you sure you want to send this transaction?</ThemedText>
-                                <View style={styles.buttonContainer}>
-                                    <Pressable style={[styles.button, styles.cancelButton]} onPress={cancelTransaction}>
-                                        <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
-                                    </Pressable>
-                                    <Pressable style={[styles.button, styles.confirmButton]} onPress={handleTransaction}>
-                                        <ThemedText style={styles.confirmButtonText}>Confirm</ThemedText>
-                                    </Pressable>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    </Modal>
+
+                    <SubmitScoreModalNotVisible visible={modalVisible} onCancel={cancelTransaction} onConfirm={handleTransaction} />
                 </ThemedView>
             </GestureHandlerRootView>
         </>
