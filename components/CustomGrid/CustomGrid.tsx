@@ -1,6 +1,7 @@
 import GameCartridge from '@/components/GameCartridge/GameCartridge';
 import LoginContext from '@/hooks/loginContext';
 import { GameData } from '@/src/model/GameData';
+import * as Sentry from '@sentry/react-native';
 import Checkbox from 'expo-checkbox';
 import { Link, router } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
@@ -82,6 +83,18 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
             updatedSkippedGames.add(selectedGame.id);
             setSkippedWarningGames(updatedSkippedGames);
         }
+
+        Sentry.captureEvent({
+            message: 'User skipped login to play game',
+            level: 'info',
+            timestamp: Date.now() / 1000,
+            tags: {
+                feature: 'before-play-show-submission-warning',
+            },
+            extra: {
+                game: selectedGame,
+            },
+        });
 
         // Close modal and navigate
         setSubmitScoreWarningModalVisible(false);
