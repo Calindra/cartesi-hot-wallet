@@ -1,12 +1,12 @@
-import { StyleSheet, TouchableOpacity, useColorScheme, View, Modal, Text } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { ThemedText } from './ThemedText';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import LeaderboardModal from './LeaderboardModal';
+import { ThemedText } from './ThemedText';
 
 interface SettingsButtonProps {
-    title: string
+    title: string;
 }
 
 const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
@@ -21,7 +21,7 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
         <View>
             <TouchableOpacity
                 style={styles.settingsButton}
-                onPress={(e) => {
+                onPress={e => {
                     e.stopPropagation();
                     toggleDropdown();
                 }}
@@ -29,12 +29,7 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
                 <Feather name="settings" size={20} color={colors.text} />
             </TouchableOpacity>
 
-            <Modal
-                visible={showDropdown}
-                transparent
-                animationType="fade"
-                onRequestClose={handleModalClose}
-            >
+            <Modal visible={showDropdown} transparent animationType="fade" onRequestClose={handleModalClose}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>{title}</Text>
@@ -60,15 +55,10 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
                     </View>
                 </View>
             </Modal>
-            {showLeaderboard && (
-                <LeaderboardModal
-                    visible={showLeaderboard}
-                    onClose={() => setShowLeaderboard(false)}
-                />
-            )}
+            {showLeaderboard && <LeaderboardModal visible={showLeaderboard} onClose={() => setShowLeaderboard(false)} />}
         </View>
-    )
-}
+    );
+};
 const styles = StyleSheet.create({
     settingsButton: {
         marginTop: 8,
@@ -117,7 +107,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 });
-
-
 
 export default SettingsButton;

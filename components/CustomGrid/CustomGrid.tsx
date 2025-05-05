@@ -125,16 +125,18 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
                                             tiltGamepad: item.tiltGamepad,
                                         },
                                     }}
-                                    style={styles.columnContainer}
                                 >
                                     <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
                                 </Link>
                                 <SettingsButton title={item.title} />
                             </View>
                         ) : (
-                            <TouchableOpacity key={item.id} style={styles.columnContainer} onPress={() => handleGamePress(item)}>
-                                <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
-                            </TouchableOpacity>
+                            <View key={item.id} style={styles.columnContainer}>
+                                <TouchableOpacity key={item.id} onPress={() => handleGamePress(item)}>
+                                    <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
+                                </TouchableOpacity>
+                                <SettingsButton title={item.title} />
+                            </View>
                         )
                     )}
                     {rowItems.length < columnCount &&
