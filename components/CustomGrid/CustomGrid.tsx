@@ -58,8 +58,9 @@ const CustomGrid: React.FC<CustomGridProps> = ({ data }) => {
                   author={item.author}
                 />
               </Link>
-
-              <SettingsButton title={item.title} />
+              {item.title === 'Free Doom' &&
+                (<SettingsButton title={item.title} />)
+              }
             </View>
           ))}
           {rowItems.length < columnCount &&

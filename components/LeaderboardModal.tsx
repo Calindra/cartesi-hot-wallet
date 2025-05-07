@@ -12,7 +12,6 @@ import {
     StatusBar,
     Platform,
 } from 'react-native';
-// import { generateLeaderboardData, LeaderboardEntry } from './Lea';
 import { Feather } from '@expo/vector-icons';
 import { generateLeaderboardData, LeaderboardEntry } from '@/src/services/LeaderboardServices';
 

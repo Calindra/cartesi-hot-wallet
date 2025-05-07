@@ -1,5 +1,4 @@
-import { StyleSheet, TouchableOpacity, useColorScheme, View, Modal, Text } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { StyleSheet, TouchableOpacity, View, Modal } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -11,55 +10,20 @@ interface SettingsButtonProps {
 
 const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [showDropdown, setShowDropdown] = useState(false);
-    const toggleDropdown = () => setShowDropdown(prev => !prev);
-    const colorScheme = useColorScheme();
-    const colors = Colors[colorScheme ?? 'light'];
 
-    const handleModalClose = () => setShowDropdown(false);
     return (
         <View>
             <TouchableOpacity
                 style={styles.settingsButton}
                 onPress={(e) => {
                     e.stopPropagation();
-                    toggleDropdown();
+                    setShowLeaderboard(true);
                 }}
             >
-                <Feather name="settings" size={20} color={colors.text} />
+                <Feather name="award" size={20} color="#333" />
+                <ThemedText style={styles.buttonText}>Leaderboard</ThemedText>
             </TouchableOpacity>
 
-            <Modal
-                visible={showDropdown}
-                transparent
-                animationType="fade"
-                onRequestClose={handleModalClose}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{title}</Text>
-
-                        {title === 'Free Doom' && (
-                            <TouchableOpacity
-                                style={styles.dropdownItem}
-                                onPress={() => {
-                                    setShowDropdown(false);
-                                    setShowLeaderboard(true);
-                                }}
-                            >
-                                <ThemedText style={styles.dropdownText}>Leaderboard</ThemedText>
-                            </TouchableOpacity>
-                        )}
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => console.log('Controls')}>
-                            <ThemedText style={styles.dropdownText}>Controls</ThemedText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={handleModalClose}>
-                            <ThemedText style={{ marginTop: 16, color: '#E44' }}>Close</ThemedText>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
             {showLeaderboard && (
                 <LeaderboardModal
                     visible={showLeaderboard}
@@ -69,12 +33,18 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
         </View>
     )
 }
+
 const styles = StyleSheet.create({
     settingsButton: {
         marginTop: 8,
         paddingHorizontal: 20,
         borderRadius: 8,
         zIndex: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    buttonText: {
+        marginLeft: 8,
     },
     modalOverlay: {
         position: 'absolute',
@@ -117,7 +87,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 });
-
-
 
 export default SettingsButton;
