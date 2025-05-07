@@ -6,6 +6,7 @@ import {
     Animated,
     Keyboard,
     LayoutChangeEvent,
+    Linking,
     Modal,
     ScrollView,
     StyleSheet,
@@ -108,6 +109,17 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
     const handleSignUp = (): void => {
         handleClose();
         router.push('/createAccount');
+    };
+
+    const handlePrivacyPolicyPress = async () => {
+        const url = 'https://cartesi-hot-wallet-project.fly.dev/privacy-policy.html';
+        const supported = await Linking.canOpenURL(url);
+
+        if (supported) {
+            await Linking.openURL(url);
+        } else {
+            console.warn(`Don't know how to open this URL: ${url}`);
+        }
     };
 
     const validateEmail = (email: string): boolean => {
@@ -240,6 +252,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isVisible, onClose, onLogin }) 
                                 <TouchableOpacity onPress={handleSignUp}>
                                     <ThemedText style={styles.signupLink}>Sign Up</ThemedText>
                                 </TouchableOpacity>
+                                <ThemedText>-</ThemedText>
+                                <TouchableOpacity onPress={handlePrivacyPolicyPress}>
+                                    <ThemedText style={styles.signupLink}>Privacy Policy</ThemedText>
+                                </TouchableOpacity>
+                                {/* https://cartesi-hot-wallet-project.fly.dev/privacy-policy.html */}
                             </View>
                         </View>
                     </ScrollView>
@@ -359,6 +376,7 @@ const styles = StyleSheet.create<Styles>({
         justifyContent: 'center',
         alignItems: 'center',
         marginTop: 24,
+        gap: 8,
     },
     signupText: {
         color: '#666',
