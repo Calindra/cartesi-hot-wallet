@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -10,6 +10,10 @@ interface SettingsButtonProps {
 
 const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
+
+    const textIconColor = isDarkMode ? '#FFFFFF' : '#333333';
 
     return (
         <View>
@@ -20,8 +24,10 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
                     setShowLeaderboard(true);
                 }}
             >
-                <Feather name="award" size={20} color="#333" />
-                <ThemedText style={styles.buttonText}>{title}</ThemedText>
+                <Feather name="award" size={20} color={textIconColor} />
+                <ThemedText style={[styles.buttonText, { color: textIconColor }]}>
+                    {title}
+                </ThemedText>
             </TouchableOpacity>
 
             {showLeaderboard && (
