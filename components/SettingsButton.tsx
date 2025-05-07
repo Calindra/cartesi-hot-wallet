@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, Modal } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -21,7 +21,7 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
                 }}
             >
                 <Feather name="award" size={20} color="#333" />
-                <ThemedText style={styles.buttonText}>Leaderboard</ThemedText>
+                <ThemedText style={styles.buttonText}>{title}</ThemedText>
             </TouchableOpacity>
 
             {showLeaderboard && (
@@ -36,12 +36,15 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
 
 const styles = StyleSheet.create({
     settingsButton: {
-        marginTop: 8,
-        paddingHorizontal: 20,
+        marginTop: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 8,
         zIndex: 10,
         flexDirection: 'row',
         alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'center',
     },
     buttonText: {
         marginLeft: 8,
