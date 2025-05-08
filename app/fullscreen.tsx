@@ -305,7 +305,7 @@ export default function FullScreen() {
             console.log('Raw request', request);
             if (request.method === 'request') {
                 try {
-                    console.log(request);
+                    console.log({ request });
                     let result;
                     if (request.args.method === 'eth_requestAccounts' || request.args.method === 'eth_accounts') {
                         result = [client.account?.address];
@@ -376,6 +376,29 @@ export default function FullScreen() {
         }
     };
 
+    const handleCloseModal = async () => {
+        setIsLoginModalOpen(false);
+        const client = walletService.getCurrentWallet();
+        if (!client) {
+            if (pendingMessage) {
+                const request = JSON.parse(pendingMessage);
+                const response = {
+                    reqId: request.reqId,
+                    error: {
+                        message: `The user canceled the transaction`,
+                    },
+                };
+                const eventScript = `
+              window.ethereum.responseReceiver(${JSON.stringify(response)});
+              true; // To ensure execution is finished
+            `;
+                if (webViewRef.current) {
+                    webViewRef.current.injectJavaScript(eventScript);
+                }
+            }
+        }
+    };
+
     return (
         <>
             <Stack.Screen options={{ headerTitle: 'Game', headerShown: false }} />
@@ -390,7 +413,7 @@ export default function FullScreen() {
             <LoginModal
                 isVisible={isLoginModalOpen}
                 onClose={() => {
-                    setIsLoginModalOpen(false);
+                    handleCloseModal();
                 }}
                 onLogin={handleLogin}
                 setShowCreateAccount={() => {
