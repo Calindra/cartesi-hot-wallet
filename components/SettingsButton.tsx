@@ -1,70 +1,59 @@
-import { Colors } from '@/constants/Colors';
+import { StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ThemedText } from './ThemedText';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import LeaderboardModal from './LeaderboardModal';
-import { ThemedText } from './ThemedText';
 
 interface SettingsButtonProps {
-    title: string;
+    title: string
 }
 
 const SettingsButton: React.FC<SettingsButtonProps> = ({ title }) => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [showDropdown, setShowDropdown] = useState(false);
-    const toggleDropdown = () => setShowDropdown(prev => !prev);
     const colorScheme = useColorScheme();
-    const colors = Colors[colorScheme ?? 'light'];
+    const isDarkMode = colorScheme === 'dark';
 
-    const handleModalClose = () => setShowDropdown(false);
+    const textIconColor = isDarkMode ? '#FFFFFF' : '#333333';
+
     return (
         <View>
             <TouchableOpacity
                 style={styles.settingsButton}
-                onPress={e => {
+                onPress={(e) => {
                     e.stopPropagation();
-                    toggleDropdown();
+                    setShowLeaderboard(true);
                 }}
             >
-                <Feather name="settings" size={20} color={colors.text} />
+                <Feather name="award" size={20} color={textIconColor} />
+                <ThemedText style={[styles.buttonText, { color: textIconColor }]}>
+                    {title}
+                </ThemedText>
             </TouchableOpacity>
 
-            <Modal visible={showDropdown} transparent animationType="fade" onRequestClose={handleModalClose}>
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{title}</Text>
-
-                        {title === 'Free Doom' && (
-                            <TouchableOpacity
-                                style={styles.dropdownItem}
-                                onPress={() => {
-                                    setShowDropdown(false);
-                                    setShowLeaderboard(true);
-                                }}
-                            >
-                                <ThemedText style={styles.dropdownText}>Leaderboard</ThemedText>
-                            </TouchableOpacity>
-                        )}
-                        <TouchableOpacity style={styles.dropdownItem} onPress={() => console.log('Controls')}>
-                            <ThemedText style={styles.dropdownText}>Controls</ThemedText>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={handleModalClose}>
-                            <ThemedText style={{ marginTop: 16, color: '#E44' }}>Close</ThemedText>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-            {showLeaderboard && <LeaderboardModal visible={showLeaderboard} onClose={() => setShowLeaderboard(false)} />}
+            {showLeaderboard && (
+                <LeaderboardModal
+                    visible={showLeaderboard}
+                    onClose={() => setShowLeaderboard(false)}
+                />
+            )}
         </View>
-    );
-};
+    )
+}
+
 const styles = StyleSheet.create({
     settingsButton: {
-        marginTop: 8,
-        paddingHorizontal: 20,
+        marginTop: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 8,
         zIndex: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        marginLeft: 8,
     },
     modalOverlay: {
         position: 'absolute',

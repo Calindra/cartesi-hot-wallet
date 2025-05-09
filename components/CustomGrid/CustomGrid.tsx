@@ -3,7 +3,7 @@ import LoginContext from '@/hooks/loginContext';
 import { GameData } from '@/src/model/GameData';
 import * as Sentry from '@sentry/react-native';
 import Checkbox from 'expo-checkbox';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SettingsButton from '../SettingsButton';
@@ -112,36 +112,52 @@ const CustomGrid: React.FC<CustomGridProps> = ({ gameData }) => {
 
             rows.push(
                 <View key={`row-${i}`} style={styles.row}>
-                    {rowItems.map(item =>
-                        address ? (
-                            <View key={item.id} style={styles.columnContainer}>
-                                <Link
-                                    href={{
-                                        pathname: item.webview ? '/(tabs)/webview' : '/fullscreen',
-                                        params: {
-                                            gameURL: item.gameURL,
-                                            webviewURI: item.webviewURI,
-                                            arrowGamepad: item.arrowGamepad,
-                                            tiltGamepad: item.tiltGamepad,
-                                        },
+                    {rowItems.map((item, index) => (
+                        <View
+                            key={`${item.id}-${index}`}
+                            style={[
+                                styles.columnContainer,
+                                {
+                                    width: `${100 / columnCount - 2}%`,
+                                    maxWidth: 170, // Ensure consistent max width
+                                },
+                            ]}
+                        >
+                            <View style={styles.cartridgeWrapper}>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        if (!address) {
+                                            handleGamePress(item);
+                                        } else {
+                                            navigateToGame(item);
+                                        }
                                     }}
                                 >
                                     <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
-                                </Link>
-                                <SettingsButton title={item.title} />
-                            </View>
-                        ) : (
-                            <View key={item.id} style={styles.columnContainer}>
-                                <TouchableOpacity key={item.id} onPress={() => handleGamePress(item)}>
-                                    <GameCartridge imageUrl={item.imageUrl} title={item.title} author={item.author} />
                                 </TouchableOpacity>
-                                <SettingsButton title={item.title} />
                             </View>
-                        )
-                    )}
+
+                            {item.title === 'Free Doom' && (
+                                <View style={styles.settingsButtonContainer}>
+                                    <SettingsButton title="Leaderboard" />
+                                </View>
+                            )}
+                        </View>
+                    ))}
+                    {/* Add empty placeholders to fill the row if needed */}
                     {rowItems.length < columnCount &&
                         [...Array(columnCount - rowItems.length)].map((_, index) => (
-                            <View key={`empty-${index}`} style={[styles.columnContainer, { opacity: 0 }]} />
+                            <View
+                                key={`empty-${index}`}
+                                style={[
+                                    styles.columnContainer,
+                                    {
+                                        width: `${100 / columnCount - 2}%`,
+                                        opacity: 0,
+                                        maxWidth: 170, // Match with actual column containers
+                                    },
+                                ]}
+                            />
                         ))}
                 </View>
             );
@@ -203,15 +219,22 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
+        justifyContent: 'space-evenly',
+        marginBottom: 16,
+        flexWrap: 'wrap',
     },
     columnContainer: {
-        flex: 1,
-        marginHorizontal: 6,
         alignItems: 'center',
+        marginHorizontal: '1%',
+    },
+    cartridgeWrapper: {
         width: '100%',
-        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    settingsButtonContainer: {
+        width: '100%',
+        alignItems: 'center',
+        marginTop: 4,
     },
     // Modal styles
     modalOverlay: {
