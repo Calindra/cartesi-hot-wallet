@@ -12,10 +12,11 @@ const logo = require('../../assets/images/banner-cartesi-app-1920x1920px.jpg');
 const gameData: GameData[] = [
     {
         id: '1',
-        title: 'Gamepad Test',
+        title: 'Joy',
         author: 'Calindra',
         imageUrl: 'https://i.imgur.com/FePyexY.jpeg',
         gameURL: 'https://raw.githubusercontent.com/edubart/cartridges/main/gamepad.sqfs',
+        webviewURI: 'https://rives-virtual-mobile-gamepad.vercel.app/doom-with-arrows.html',
         webview: false,
         tiltGamepad: 'doom-smooth-turn.html',
         arrowGamepad: 'doom-with-arrows.html',
