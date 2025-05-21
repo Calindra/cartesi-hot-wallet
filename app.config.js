@@ -1,5 +1,6 @@
-const VERSION = '0.0.3';
-const IOS_BUILDNUMBER = '3';
+const VERSION = '0.0.7';
+const IOS_BUILDNUMBER = '7';
+const ANDROID_VERSIONCODE = 7;
 module.exports = {
     expo: {
         name: 'Cartesi Hot Wallet',
@@ -20,7 +21,7 @@ module.exports = {
                 foregroundImage: './assets/images/cartesi-hot-wallet-logo.png',
                 backgroundColor: '#ffffff',
             },
-            versionCode: IOS_BUILDNUMBER,
+            versionCode: ANDROID_VERSIONCODE,
             package: 'io.cartesi.hotwallet',
         },
         web: {
@@ -64,9 +65,6 @@ module.exports = {
             eas: {
                 projectId: 'bd0f0df3-44d7-411b-8ccd-9a1345bb32da',
             },
-        },
-        cli: {
-            appVersionSource: 'remote',
-        },
+        }
     },
 };
